@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="JupiterDemo" basedir="." default="compile">
+    <property file="env.properties"/>
+
+    <property name="src.dir" value="${basedir}"/>
+    <property name="out.dir" value="${basedir}/bin-release"/>
+    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+
+    <target name="clean" description="Clean the project">
+        <delete dir="${out.dir}" failonerror="false"/>
+    </target>
+
+    <target name="init" description="initialize the project" depends="clean">
+        <mkdir dir="${out.dir}"/>
+    </target>
+
+    <target name="compile" description="Compile jupiter appliction" depends="init">
+    	<ant dir="${FLEX_HOME}/frameworks/projects/airframework" target="compile"/>
+    	<ant dir="${FLEX_HOME}/frameworks/projects/rpc" target="compile"/>
+    	<ant dir="${FLEX_HOME}/frameworks/projects/framework" target="compile"/>
+    	
+    	<!-- compile main SWF -->
+        <mxmlc file="${src.dir}/Test.mxml" output="${out.dir}/JupiterAIR.swf" debug="${DEBUG}" optimize="${OPTIMIZE}"
+            link-report="${out.dir}/report.xml" configname="air">
+
+            <source-path path-element="${src.dir}"/>
+
+            <library-path dir="${FLEX_HOME}/frameworks/libs" append="true">
+                <include name="*.swc"/>
+            </library-path>
+            <library-path dir="${FLEX_HOME}/frameworks/libs/air" append="true">
+                <include name="*.swc"/>
+            </library-path>
+        </mxmlc>
+    </target>
+</project>
