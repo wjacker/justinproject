@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- deeplinking/ComplexMultiPanelExample.mxml -->
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+    layout="vertical" 
+    historyManagementEnabled="false" 
+xmlns:text="flash.text.*">   
+
+<mx:Script>
+	<![CDATA[
+		import mx.containers.Canvas;
+		import com.Property;
+		import com.ViewModel;
+		import com.MyView;
+		import __AS3__.vec.Vector;
+		
+		public function countString() : void
+		{
+			/* result.text = "";
+			var date1 : Date = new Date();
+			
+			var s : String = myTextInput.text
+			if(s.length == 0)
+				return;
+			var obj : Object = new Object();
+			var strChar : String;
+			result.text += "Count Length:" + s.length + "\n"
+			
+			for(var i : int = 0; i < s.length; i++)
+			{
+				strChar = s.charAt(i);
+				if(obj.hasOwnProperty(strChar))
+				{
+					obj[strChar] = obj[strChar] + 1;
+				}
+				else
+				{
+					obj[strChar] = 1;
+				}
+			}
+			
+			for(var propeties : String in obj)
+			{
+				result.text += propeties + ":"+ obj[propeties] + "\n";
+			}
+			
+			var date2 : Date = new Date();
+			result.text += "time spend:" + (date2.time - date1.time) + "ms"; */
+			
+			//restMethod(12,new Person("Justin", 30),"hello");
+			/* ViewModel.app.restMethod(12,new Person("Justin", 30),"hello");
+			ViewModel.view.property = new Property();
+			ViewModel.paintBoard.width = 200; */
+		}
+		
+		public function restMethod(...rest):void
+		{
+			/* var abc;
+			var vec : Vector.<Person>;
+			vec = new Vector.<Person>();
+			
+			MyView.listView.myProperty;
+			MyView.listView1.property2;
+			
+			
+			
+			trace("i: "+i);
+			trace("j: "+j);
+			trace("i: "+abc);
+			
+			for(var i : Number = 0; i < rest.length; i++)
+			{
+				if(rest[i] is Person)
+				{
+					vec.push(rest[i]);
+					trace("rest[i]: "+ rest[i]);
+				}
+				var j : Number = i;
+				
+			}
+			trace("i: "+i);
+			trace("j: "+j); */
+		}
+	]]>
+</mx:Script>
+<mx:TextArea id="myTextInput" width="100%" height="50%"/>
+<mx:Button click="countString()" label="Count"/>
+<mx:TextArea id="result" width="100%" height="50%"/>
+</mx:Application>
+
