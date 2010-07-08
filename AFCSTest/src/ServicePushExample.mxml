@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" creationComplete="init();">
+	<mx:Script>
+		<![CDATA[
+			import flash.utils.clearTimeout;
+			import flash.utils.setTimeout;
+			import mx.rpc.AbstractOperation;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.AsyncToken;
+			import mx.messaging.channels.AMFChannel;
+			import mx.rpc.remoting.mxml.RemoteObject;
+			import mx.messaging.ChannelSet;
+			import mx.messaging.messages.IMessage;
+			
+			private var service : RemoteObject;
+			
+			private var timeInterval : uint;
+			
+			private function init() : void
+			{
+				service = new RemoteObject();
+                var channel : ChannelSet = new ChannelSet();
+                var amf : AMFChannel = new AMFChannel();
+                amf.uri = "http://flexmessagebroadcast.appspot.com/messagebroker/amf";
+                channel.addChannel(amf);
+                service.channelSet = channel;
+                service.destination = "DataPushService";
+				
+				consumer.subscribe();
+			}
+			
+			private function unsubscribe() : void
+			{
+				consumer.unsubscribe();
+			}
+			
+			private function subscribe() : void
+			{
+				consumer.subscribe();
+			}
+			
+			private function messageHandler(message:IMessage) : void
+			{
+				trace("aa");
+			}
+			
+			private function startServicePushing() : void
+			{
+				var op : AbstractOperation = service.getOperation("start");
+	            var token : AsyncToken = AsyncToken(op.send());
+	            token.addResponder(new mx.rpc.Responder(resultHandler, faultHandler)); 
+	            //clearTimeout(timeInterval);
+				//setTimeout(startServicePushing,6000);
+			}
+			
+			private function stopServicePushing() : void
+			{
+				/* var op : AbstractOperation = service.getOperation("stop");
+	            var token : AsyncToken = AsyncToken(op.send());
+	            token.addResponder(new mx.rpc.Responder(resultHandler, faultHandler)); */
+	            
+	            clearTimeout(timeInterval);
+			}
+			
+			private function faultHandler(fault:FaultEvent):void {
+                trace("code:\n" + fault.fault.faultCode + "\n\nMessage:\n" + fault.fault.faultString + "\n\nDetail:\n" + fault.fault.faultDetail);
+            }
+            private function resultHandler(evt:ResultEvent):void {
+                trace((evt != null && evt.message != null && evt.message.body != null) ? evt.message.body.toString() : "null message");
+            }
+		]]>
+	</mx:Script>
+	
+	<mx:Consumer id="consumer" destination="dataPush" message="messageHandler(event.message)">
+		<mx:channelSet>
+			<mx:ChannelSet>
+				<mx:AMFChannel uri="http://flexmessagebroadcast.appspot.com/messagebroker/streamingamf"/>
+			</mx:ChannelSet>
+		</mx:channelSet>
+	</mx:Consumer>
+	<mx:HBox>
+		<mx:Button label="Unsubscribe" click="unsubscribe()"/>
+		<mx:Button label="Subscribe" click="subscribe()"/>
+		<mx:Button label="Start Service Push" click="startServicePushing()"/>
+		<mx:Button label="Stop Service Push" click="stopServicePushing()"/>
+	</mx:HBox>
+	<mx:Grid width="100%" height="100%">
+		<mx:GridRow width="100%" height="100%">
+			<mx:GridItem width="100%" height="100%">
+				<mx:PieChart id="pieChartView" width="100%" height="100%">
+					
+				</mx:PieChart>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:DataGrid id="gridView" width="100%" height="100%"/>
+			</mx:GridItem>
+		</mx:GridRow>
+		<mx:GridRow width="100%" height="100%">
+			<mx:GridItem width="100%" height="100%">
+				<mx:ColumnChart id="columnChartView" width="100%" height="100%">
+					
+				</mx:ColumnChart>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+			</mx:GridItem>
+		</mx:GridRow>
+	</mx:Grid>
+	
+</mx:Application>
