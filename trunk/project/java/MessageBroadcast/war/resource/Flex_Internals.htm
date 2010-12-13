@@ -1,0 +1,1538 @@
+<html>
+
+<head>
+	<title>Flex Internals</title>
+	<link rel="SHORTCUT ICON" href="http://www.docsultant.com/img/logo.ico">
+	<link rel="STYLESHEET" href="misc.css" type="text/css">
+</head>
+
+
+<body>
+
+
+<h1>Flex Internals</h1>
+
+<p>
+Welcome to Flexoland. First of all I am not evangelist or big "fan" of ActionScript/Flex, althought it
+implements interesting ideas. My fields of interest are C++/C# Win32/WinFX system/IE/application development,
+sometime with interruptions for Java and misc scripting. I'd be interested in 
+robot-building, AI systems, <a href="http://www.kegel.com/c10k.html">high performance servers</a> but 
+this is out of scope of real work now.
+
+Latest RIA projects I was involved in were based on Ajax/Flex platforms. This page is place 
+for strange and interesting things found in this environment (Flex 1.5/2/3, ActionScript 2/3). 
+<!--
+It may be usual for Flash people, but sometime it is not very clear as for me.
+
+	For example I don't understand why there is no "modal lock" or "sleep" method in Flash, 
+and all attempts to implement it (even via fscommand failed), but at the same moment 
+"PrintJob.start" does it w/o any problem. Or it's not clear for me when and how
+Flash breaks code execution to keep up rendering frame rate, or why LocalConnection
+is so unefficient and broadcasts all internal and user  events via single mutex/memory 
+mapped file, with message 64KB limit and max throughput on ideal 3GHz system around 40 messages/sec,
+why AS3 proxy doesn't allow to override type casting operations, and doesn't provide ability for transparent  
+object subclassing, etc.. 
+-->
+</p>
+
+<p>
+P.S.: <b style="color:red;">NO WARRANTIES ARE EXTENDED. USE ALL DESCRIBED IDEAS AT YOUR OWN RISK.</b> 
+Some ideas might be obsolete, as Adobe periodically updates Flex. Also please forgive me my bad English and be happy.
+</p>
+
+
+<hr>
+
+<h3>Content</h3>
+<ul>
+	<li>Flex 1.5/AS2
+		<ul>
+			<li><a href="#getcls">getClassByName</a></li>
+			<li><a href="#listcls">How to list all loaded classes</a></li>
+			<li><a href="#parsedate">Parse Date string</a></li>
+		</ul>
+	</li>
+	<li>Flex 2.0/AS3
+		<ul>
+			<li><a href="#objectproxy">Accessing proxied object</a></li>
+			<li><a href="#dinvoke">Dynamic method invocation</a></li>
+			<li><a href="#dumpstack">Stack dumper</a></li>
+			<li><a href="#thisObject">thisObject & Function.call/apply</a></li>
+			<li><a href="#applyConstructor">applyConstructor</a></li>
+			<li><a href="#xmlNotify">XML.setNotification</a></li>
+			<li><a href="#customService">AbstractService.operationClass</a></li>
+			<li><a href="#customService2">AbstractService.getOperation</a></li>
+			<li><a href="#eventx">Dynamic events</a></li>
+			<li><a href="#transient">[Transient] metadata flag</a></li>
+		</ul>
+	</li>
+	<li>Flex 3.0/AIR/AS3
+		<ul>
+			<li><a href="#tamarin">ActionScript 3 VM source code aka "Tamarin"</a></li>
+			<li><a href="#nemo440">Nemo 440</a></li>
+			<li><a href="#uerror">Unhandled errors handler</a></li>
+			<li><a href="#f2f3">Flex 3 + Flex 2 = 0 ?</a></li>
+			<li><a href="#airflash">How to determine Flash container type?</a></li>
+			<li><a href="#objtype">Object type equality</a></li>
+			<li><a href="#mpi">Tracing data dervices performance MPI data</a></li>
+			<li><a href="#dt">Design-time mode</a></li>
+			<li><a href="#reboot">Light reboot</a></li>
+			<li><a href="#pubid">Discover AIR Publisher ID on Windows</a></li>
+			<li><a href="#olapexample2">Extended Adobe OLAPDataGridExample</a></li>
+			<li><a href="#ie8http200">IE8 "NetConnection.Call.Failed HTTP: Status 200" workaround</a></li>			
+		</ul>
+	</li>
+	<li>Flex 4.0
+		<ul>
+			<li>TBC</li>
+		</ul>
+	</li>
+</ul>
+
+
+<hr>
+
+<h3 id="getcls">getClassByName</h3>
+
+<p>
+ActionScript 2.0 doesn't provide API like flash.utils.getClassByName.
+There is also no built-in "Class" type, and only [ClassReference] attribute 
+used to mark property/field as class reference member.
+
+Good news is that getClassByName can be simulated using "eval" function:
+</p>
+
+<div class=sampleCode>
+<br>
+&nbsp;public static function getClassByName(className:String)
+{
+	return eval("_global."+className);
+}
+<br>
+<br>
+</div>
+
+<hr/>
+
+<h3 id="listcls">How to list all loaded classes</h3>
+
+<p>
+Intersting enough, that AS2 stores all class references as fields of _global object, 
+replacing '.' width '_' (I'd also be happy to know if AS3 somehow provides some
+special storage for all loaded classes, and the way to access it, in my
+understanding it's going to be somewhere inside ApplicationDomain):
+</p>
+
+
+
+
+<div class=sampleCode>
+<br>
+&nbsp;public static function listClasses()<br>
+&nbsp;{<br>
+&nbsp;&nbsp;_global.ASSetPropFlags(_global, null, 0, true);<br>
+&nbsp;&nbsp;for(var name in _global)<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;var v = _global[name];<br>
+&nbsp;&nbsp;&nbsp;if( v==null || typeof(v)!="function" )<br>
+&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+<br>
+&nbsp;&nbsp;&nbsp;if( v["__proto__"]==null ) continue;<br>
+<br>
+&nbsp;&nbsp;&nbsp;var clsName = name.split("_").join(".");<br>
+&nbsp;&nbsp;&nbsp;Logger.trace("Found class: "+clsName+", ref="+v);<br>
+&nbsp;&nbsp;}<br>
+&nbsp;}<br>
+<br>
+</div>
+
+
+<hr>
+
+
+<h3 id="parsedate">Parse Date string</h3>
+<p>Flex 2.0 provides API to parse date string like Date.parse, but I
+was unable to find something similar in AS2. So I've used 
+mx.formatters.DateFormatter.parseDateString method. 
+</p>
+
+<div class=sampleCode>
+<br>
+&nbsp;var s:String;<br>
+&nbsp;...<br>
+&nbsp;var d:Date = mx.formatters.DateFormatter.parseDateString(s);<br>
+<br>
+</div>
+
+<p>
+Note: the method imlementation is very buggy, doesn't provide
+localization support and also is not public in Flex 2 anymore.
+</p>
+
+
+
+<hr>
+
+
+
+
+<h3 id="objectproxy">Accessing proxied object</h3>
+<p>
+Under some circumstances Flex wraps object with special mx.utils.ObjectProxy wrapper class. 
+Documentation describes special object_proxy "object" property  containing reference
+to real object. But accessing this property at runtime always returns "null", 
+althought this property is visible in debuger watch window with "package" icon. Code below demonstrates
+the problem, and shows "Real object: null" message:
+
+</p>
+
+<div class=sampleCode>
+<br>
+&nbsp;import mx.utils.ObjectProxy;<br>
+&nbsp;import mx.controls.Alert;<br>
+&nbsp;...<br>
+&nbsp;var o1:Object = { f1:"aaa", f2:123 };<br>
+&nbsp;var o2:Object = new ObjectProxy(o1);<br>
+&nbsp;var o3:Object = ObjectProxy(o2).object;<br>
+&nbsp;Alert.show("Real object: "+o3);<br>
+<br>
+</div>
+
+<p>Matt Chotin pointed me to the solution. It's special namespaced property and need in 
+special code handling. So updated example listed below:
+ </p>
+
+<div class=sampleCode>
+<br>
+&nbsp;import mx.utils.ObjectProxy;<br>
+&nbsp;<b>import mx.utils.object_proxy;</b><br>
+&nbsp;import mx.controls.Alert;<br>
+&nbsp;...<br>
+&nbsp;var o1:Object = { f1:"aaa", f2:123 };<br>
+&nbsp;var o2:Object = new ObjectProxy(o1);<br>
+&nbsp;<b>var o3:Object = ObjectProxy(o2).object_proxy::object;</b><br>
+&nbsp;Alert.show("Real object: "+o3);<br>
+<br>
+</div>
+<hr>
+
+<br>
+
+<h3 id="dinvoke">Dynamic method invocation</h3>
+<p>Sometimes you need to dynamically invoke certain object method in Flex environment. 
+With Flex 1.5 we used the following line to call remote object method at runtime:
+</p>
+<div class=sampleCode>
+<br>
+&nbsp;var ro:mx.remoting.RemoteObject;<br>
+&nbsp;... // somehow initialize it<br>
+&nbsp;ro["foo1"].apply(ro, ["arg1", "arg2"]);<br>
+<br>
+&nbsp;// code above is equivalent of MXML code like<br>
+&nbsp;//  &lt;mx:RemoteObject id="ro2" .../><br>
+&nbsp;//  &lt;mx:Button label="Run" click="ro2.foo1('arg1', 'arg2')" .../><br>
+<br>
+</div>
+
+<p>With Flex 2.0 (ActionScript 3) this solution doesn't work anymore.  
+Our sample will throw exception. It's caused be the fact 
+mx.rpc.remoting.mxml.RemoteObject is derrived from flash.utils.Proxy class
+and uses it to handle dynamic method invocation tasks, like
+old Object._resolve/addProperty APIs in ActionScript 2.0. (strictly speaking
+it's implemented inside mx.rpc.AbstractService class
+as callProperty/ getProperty/ nextName/ nextNameIndex/ nextValue/ setProperty members).
+Code fails because ro["foo1"] statement will invoke AbstractService:getProperty() API,
+althought real ro.foo1(...) statement under the hood invokes callProperty method. And  
+AbstractService:callProperty implementation differs from AbstractService:getProperty one,
+by calling Operation:send. Actually send() method call need to be moved to the Operation 
+implementation, and possibly ??? it's bug in RPC (for someone interested ("inter esse") 
+in please see disassembled ActionScript byte code 
+(ABC) for these <a href="flex_roabc.txt">methods</a>). 
+
+Fortunately we can force callProperty call for proxied objects, as shown below:
+</p>
+
+<div class=sampleCode>
+<br>
+&nbsp;import mx.utils.*;<br>
+&nbsp;import flash.utils.*;<br>
+<br>
+&nbsp;public static function applyMethod(obj:*, name:String, argArray:Array=null):*<br>
+&nbsp;{<br>
+&nbsp;&nbsp;if( obj is flash.utils.Proxy )<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;var args:Array = [name];<br>
+&nbsp;&nbsp;&nbsp;if( argArray!=null &amp;&amp; argArray.length>0 )<br>
+&nbsp;&nbsp;&nbsp;&nbsp;args["push"].apply(args, argArray);<br>
+&nbsp;&nbsp;&nbsp;<b>return flash.utils.Proxy(obj).flash_proxy::callProperty.apply(obj, args);</b><br>
+&nbsp;&nbsp;} else<br>
+&nbsp;&nbsp;&nbsp;return obj[name].apply(obj, argArray);<br>
+&nbsp;}<br>
+<br>
+&nbsp;...<br>
+<br>
+&nbsp;var ro : mx.rpc.remoting.mxml.RemoteObject;<br>
+&nbsp;...<br>
+&nbsp;<b>applyMethod(ro, "foo1", ["arg1", "arg2"]);</b><br>
+&nbsp;
+</div>
+
+<p>Now we can w/o problem implement 1-line "call" method like:</p>
+<div class=sampleCode>
+<br>
+&nbsp;public static function callMethod(obj:*, name:String, ... args):*<br>
+&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;return applyMethod(obj, name, args);<br>
+&nbsp;}<br>
+&nbsp;...<br>
+&nbsp;<b>callMethod(ro, "foo1", "arg1", "arg2");</b><br>
+<br>
+</div>
+
+<br>
+
+<p>When you only need in dynamic RemoteObject object method call,
+and don't want to use applyMethod API, the following code will work:
+</p>
+
+<div class=sampleCode>
+<br>
+&nbsp;var method:String = "foo1";<br>
+<br>
+&nbsp;// static arguments<br>
+&nbsp;<b>ro[method].send(arg1, arg2);</b><br>
+</br>
+&nbsp;// dynamic arguments<br>
+&nbsp;<b>ro[method].send.apply(null, [arg1, arg2]);</b><br>
+<br>
+</div>
+
+<br>
+
+<hr>
+
+<h3 id="dumpstack">Stack dumper</h3>
+<p>
+There is no API to walk stack in AS3. Sometime this information is useful when
+spelunking in Flex code. Yes, it's possible to see call stack under debugger.
+But it could be a problem for complex applications, or possibly this code is hard 
+to catch in debugger at all (like drag and drop, etc.). Below is a simple approach 
+to trace current stack, but it's only limited to debug Flash player version 
+(flash.system.Capabilities.isDebugger is true):
+</p>
+
+<div class=sampleCode>
+<br>
+&nbsp;public static function dumpStack():String<br>
+&nbsp;{<br>
+&nbsp;&nbsp;var res:String = "Stack not available";<br>
+&nbsp;&nbsp;try	{	<br>
+&nbsp;&nbsp;&nbsp;&nbsp;var o:Object = null;	<br>
+&nbsp;&nbsp;&nbsp;&nbsp;o.aaa();	<br>
+&nbsp;&nbsp;} catch(e:Error) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;var s:String = e.getStackTrace();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;var index:Number = s.indexOf("dumpStack");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if( index<0 ) return res;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;index = s.indexOf("\n", index);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if( index<0 ) return res;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return s.substring(index+1, s.length);<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;return res;<br>
+&nbsp;}<br>
+<br>
+&nbsp;...<br>
+<br>
+&nbsp;Logger.trace("[STACK] "+dumpStack());<br>
+<br>
+</div>
+
+<p>
+See also <a href="http://www.ajaxmaker.com/xpanel/xpanel.htm">Logger @ XPanel</a> tool.
+</p>
+
+
+
+<br>
+<p> </p>
+
+
+
+
+
+
+<hr>
+
+<h3 id="thisObject">thisObject &amp; Function.call/apply</h3>
+
+<p>
+AS3 Function object provides "call" and "apply" APIs for special
+function treatment. Both methods accept "thisObject" argument.
+Documentation says something like: <i>thisObject:Object — 
+The object to which myFunction is applied</i>.
+It doesn't describe well that thisObject parameter now ignored
+almost in all cases, in contrast to AS2.
+
+ By default when you access object method or
+global function in AS3 code you always get "thunked" object (something like
+delegate in .NET world or thunks in C++, in other words real function
+pointer+"this" context pointer). [I'd also glad to know how to extract real 
+function pointer from this pointer? Is it somewhere inside Object.prototype?]
+
+e.g. consider the following example:
+</p>
+
+<div class=sampleCode>
+<br>
+public class A { public function foo() { trace(""+this); } }<br>
+...<br>
+var a:A = new A();<br>
+var b:String = "I am b";<br>
+<br>
+a.foo();        // -> [object A] OK, it's good<br>
+trace(b);       // -> I am b     OK, it's also good<br>
+a.foo.apply(b); // -> <b>[object A] Surprise, it's not good (DM)</b><br>
+<br>
+</div>
+
+</p>
+
+<br>
+
+<p>
+The same situation with global function, thisObject is always ignored!!!
+
+At this moment I know only one possible case when it works - anonymous function,
+or function "as is":
+</p>
+
+<div class=sampleCode>
+<br>
+var foo:Function = function() { trace(""+this); }<br>
+var a:A = new A();<br>
+var b:String = "I am b";<br>
+<br>
+foo();  // -> [object global]  , OK<br>
+foo.apply(a); // -> [object A] , OK<br>
+foo.apply(b); // -> I am b     , Great it works!<br>
+<br>
+</div>
+
+<p>
+Just FYI.
+</p>
+
+<hr>
+<br>
+
+
+<h3 id="applyConstructor">applyConstructor</h3>
+
+<p>
+AS2 constructor was plain function object, and it was possible
+to call it using the same technique as other methods. e.g.:
+</p>
+
+<div class=sampleCode>
+<br>
+// Flex 1.5 code<br>
+<br>
+var cls = A; // A class reference
+
+var o:Object = new Object();<br>
+o.__proto__       = cls.prototype;<br>
+o.__constructor__ = cls;<br>
+<b>var a = cls.apply(o, args); // creating A class and passing args to constructor<br></b>
+<br>
+</div>
+
+<br>
+<p>
+Now it doesn't work anymore in Flex2. AS3 defines new Class type, but forgets
+to add something like <i>Class.create(args:Array)</i> API, which is
+equivalent of Function.apply method. It's pity. "Object.prototype.constructor"
+points to constructor function, but sounds like it accepts parameter with
+raw uninitialized class (just my assumption). 
+
+
+But in case when you still need in
+this functionality, the trick listed below could be used. Thanks to Function.apply!
+
+To demonstrate this technique arguments count are limited to 2, 
+but you are free to extend it to as many as you want
+(actually it's limited by maximum arguments count to function supported by mxmlc compiler or
+maximum generated block size or SWF size or something else).
+</p>
+
+
+<div class=sampleCode>
+<br>
+		public static function applyConstructor0(cls:Class):*<br>
+		{<br>
+&nbsp;			return new cls();<br>
+		}<br>
+<br>
+		public static function applyConstructor1(cls:Class, o1:*):*<br>
+		{<br>
+&nbsp;			return new cls(o1);<br>
+		}<br>
+<br>
+		public static function applyConstructor2(cls:Class, o1:*, o2:*):*<br>
+		{<br>
+&nbsp;			return new cls(o1, o2);<br>
+		}<br>
+<br>
+		private static var s_mapConstr:Array = null;<br>
+<br>
+		public static function applyConstructor(cls:Class, args:Array=null):*<br>
+		{<br>
+&nbsp;			if( s_mapConstr==null )<br>
+&nbsp;			{<br>
+&nbsp;&nbsp;				s_mapConstr = [<br>
+&nbsp;&nbsp;					applyConstructor0,<br>
+&nbsp;&nbsp;					applyConstructor1,<br>
+&nbsp;&nbsp;					applyConstructor2<br>
+&nbsp;&nbsp;				];<br>
+&nbsp;			}<br>
+<br>
+&nbsp;			if( args!=null && args.length>s_mapConstr.length )<br>
+&nbsp;			{<br>
+&nbsp;&nbsp;				trace("Only up to "+s_mapConstr.length+" arguments supported in constructor call.");<br>
+&nbsp;&nbsp;				return null;<br>
+&nbsp;			}<br>
+<br>
+&nbsp;			var args2:Array = [cls];<br>
+&nbsp;			var index:int = (args==null)?0:args.length;<br>
+&nbsp;			if( index>0 )<br>
+&nbsp;				args2["push"].apply(args2, args);<br>
+&nbsp;			return s_mapConstr[index].apply(null, args2);<br>
+		}<br>
+<br>
+<br>
+</div>
+
+<br>
+<p>
+This problem also exists with "super" constructor call.
+It doesn't provide apply functionality, 
+and you will get the same problem invoking superclass constructor,
+e.g. when superclass constructor accepts ... rest parameter.
+Probably the similar approach will work, in combination with #include. E.g. 
+create code snip with if/else or case/switch statement, checking 
+arguments count and invoking appropriate super() constructor, then
+just include the code snip using #include directive!
+
+</p>
+
+
+
+
+<h3 id="xmlNotify">XML.setNotification</h3>
+
+<p>
+ActionScript 3 runtime provides interesting undocumented callback 
+to intercept E4X XML events: <b>XML.setNotification(callback:Function)</b>. 
+Internally it's used by XMLListCollection class to hook up change events. 
+Also it's unclear for me why this function is undocumented in "XML era".
+</p>
+
+<p>Callback notification function has the following format:
+</p>
+
+<div>
+<pre class=sampleCode>
+
+	function callback(targetCurrent:Object, command:String, target:Object, value:Object, detail:Object):void;
+
+</pre>
+</div>
+
+
+<p>
+Possible "command" parameter values based on my exepriments and Tamarin source code are: </p><i>
+<ul>
+	<li>attributeAdded</li>
+	<li>attributeChanged</li> 
+	<li>attributeRemoved</li>
+	<li>nodeAdded</li>
+	<li>nodeChanged</li>
+	<li>nodeRemoved</li>
+	<li>namespaceAdded</li>
+	<li>namespaceRemoved</li>
+	<li>namespaceSet</li>
+	<li>textSet</li>
+	<li>nameSet</li>
+</ul>
+</i>
+
+<p>
+BTW XMLListCollection Adobe Flex 2.0.1 implementation doesn't intercept all possible events, so it's
+potentially buggy. More detailed information about the callback parameters can be obtained from
+my sample listed below and traces.
+</p>
+
+
+
+
+
+<p>Simple program to test:</p>
+<div>
+<pre class=sampleCode>
+
+&lt;mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+	creationComplete="doTest()">
+	
+&lt;mx:Script>&lt;![CDATA[
+
+public function doTest():void
+{
+	var x:XML = &lt;foo/>;
+	x.setNotification(xml_notifier);
+	
+	x.@a1 = "halo";
+	x.@a1 = "yelo";
+	delete x.@a1;
+	
+	x.appendChild(&lt;child1/>);
+	x.child1 = "some text";
+	x.child1[0].setName("child2");
+	x.child2 = &lt;child3/>;
+	delete x.child3[0];
+	
+	x.setNamespace(new Namespace("dummy"));
+}
+
+private var m_seq:int = 1;
+private function xml_notifier(targetCurrent:Object, command:String, target:Object, value:Object, detail:Object):void
+{
+	trace("["+m_seq+"] command="+command+", targetCurrent="+targetCurrent+", target="+target+", value="+value+", detail="+detail);
+	m_seq++;
+}
+		
+]]>&lt;/mx:Script>	
+&lt;/mx:Application>
+
+</pre>
+</div>
+
+<p>Console output:</p>
+
+<div>
+<pre class=sampleCode>
+
+[1] command=attributeAdded, targetCurrent=, target=, value=a1, detail=halo
+[2] command=attributeChanged, targetCurrent=, target=, value=a1, detail=halo
+[3] command=attributeRemoved, targetCurrent=, target=, value=a1, detail=yelo
+[4] command=nodeAdded, targetCurrent=&lt;foo>
+  &lt;child1/>
+&lt;/foo>, target=&lt;foo>
+  &lt;child1/>
+&lt;/foo>, value=, detail=null
+[5] command=textSet, targetCurrent=&lt;foo>
+  &lt;child1>some text&lt;/child1>
+&lt;/foo>, target=some text, value=some text, detail=null
+[6] command=nameSet, targetCurrent=&lt;foo>
+  &lt;child2>some text&lt;/child2>
+&lt;/foo>, target=some text, value=child2, detail=child1
+[7] command=nodeChanged, targetCurrent=&lt;foo>
+  &lt;child3/>
+&lt;/foo>, target=&lt;foo>
+  &lt;child3/>
+&lt;/foo>, value=, detail=some text
+[8] command=nodeRemoved, targetCurrent=, target=, value=, detail=null
+[9] command=namespaceSet, targetCurrent=, target=, value=dummy, detail=null
+
+</pre>
+</div>
+
+
+<h3 id="customService">AbstractService.operationClass</h3>
+
+<p>
+<b>Note:</b> this code
+works only for Flex 2.0 prior Flex 2.0.1 Hotfix 2/LCDS 2.5.1 with updated
+RPC library.
+Some interesting info for people 
+implementing custom web services ala Flex RPC style.  Probably this tip will be 
+unnecessary after Adobe officially publish RPC source code, but meanwhile... RemoteObject 
+and WebService classes are derived from mx.rpc.AbstractService one. Actually 
+AbstractService class provides nice helpers to work with webservice methods. 
+There is "AbstractService.getOperation" API to retrieve certain operation, but 
+it's marked as final and is not allowed to be overridden. OK, it's possible to 
+override Proxy methods like callProperty/getProperty, etc. But.. wait, there is 
+AbstractService.mx_internal:operationClass undocumented property, it's class 
+reference for Operation class. In other words just provide own class there and
+AbstractService will make all magic for you:
+
+<br>
+<p>
+Service class:
+
+<div>
+<pre class=sampleCode>
+
+package
+{
+	import mx.rpc.AbstractService;
+	import mx.rpc.AbstractOperation;
+	
+	<b>import mx.core.mx_internal;
+	use namespace mx_internal;</b>
+
+	public dynamic class MyWebService extends AbstractService
+	{
+		public function MyWebService():void
+		{
+			<b>operationClass = MyOperation;</b>
+		}
+	}
+}
+
+</pre>
+</div>
+
+<br>
+<p>
+Operation class:
+
+<div>
+<pre class=sampleCode> 
+
+package
+{
+	import mx.rpc.AbstractService;
+	import mx.rpc.AbstractOperation;
+
+	public dynamic class MyOperation extends AbstractOperation
+	{
+		public function MyOperation(svc:AbstractService, name:String = null):void
+		{
+			super(svc, name);
+		}
+
+		override public function send(... args):AsyncToken
+		{
+			// Place to provide specific to MyWebService logic
+			trace("call "+name+"(args="+args+")"); 
+		}
+
+	}
+
+}
+
+</pre>
+</div>
+
+<br>
+<p>
+Service usage:
+
+<div>
+<pre class=sampleCode>
+
+	var ws:MyWebService = new MyWebService();
+	ws.someMethod(1, 2, 3); // <- will dump something like "call someMethod(args=[1,2,3])"
+
+</pre>
+</div>
+
+
+</p>
+
+
+<h3 id="customService2">AbstractService.getOperation</h3>
+
+<p>
+<b>Note:</b> this code
+only works with Flex 2.0.1 Hotfix 2/LCDS 2.5.1 with updated
+RPC library. Adobe developers removed "final" keyword from 
+"getOperation" method, and removed "operatonClass" member as well. 
+Thank you as it's first step to make the code more transparent and convenient for
+inheritance/subclassing. I'd be happy if AbstractOperation.flash_proxy:getProperty 
+will be revised as well. As it makes a lot of evil in subclassing tasks. 
+As you might know AS3 proxy functionality (flash.utils.Proxy) is not designed well
+by design and together with strange AbstractOperation.flash_proxy:getProperty implementation 
+introduces some weird problems. Frankly speaking "getProperty" is very optimistic
+and supposes that requested property is always RPC operation, but under some circumstances
+it can be any of RemoteObject members. Also for all functions getProperty should return 
+Function object instance, and this should be rule for all operation as well. And 
+AbstractService should provide clever getProperty implementation allowing if necessary
+execute	AbstractService.super.getProperty API. Make getOperation name parameter as QName, etc<br>
+<br>
+Returning to operation overriding/subclassing: now it's very simple, just 
+override "getOperation" and return necessary Operation class, e.g.:
+</p>
+
+<div>
+<pre class=sampleCode>
+
+package
+{
+	import mx.rpc.AbstractService;
+	import mx.rpc.AbstractOperation;
+	
+	public dynamic class MyWebService extends AbstractService
+	{
+		override public function getOperation(name:String):AbstractOperation
+		{
+			var o:AbstractOperation = super.getOperation(name);
+			if( o==null )
+			{
+				o = new Operation(this, name);
+				_operations[name] = o;
+				o.asyncRequest = asyncRequest;
+			}
+			return o;
+		}
+	}
+}
+</pre>
+</div>
+
+
+<br>
+<p>
+Operation class:
+
+<div>
+<pre class=sampleCode>
+
+package
+{
+	import mx.rpc.AbstractService;
+	import mx.rpc.AbstractOperation;
+
+	public dynamic class MyOperation extends AbstractOperation
+	{
+		public function MyOperation(svc:AbstractService, name:String = null):void
+		{
+			super(svc, name);
+		}
+
+		override public function send(... args):AsyncToken
+		{
+			// Place to provide specific to MyWebService logic
+			trace("call "+name+"(args="+args+")"); 
+		}
+
+	}
+
+}
+
+</pre>
+</div>
+
+<p>
+Service usage:
+
+<div>
+<pre class=sampleCode>
+
+	var ws:MyWebService = new MyWebService();
+	ws.someMethod(1, 2, 3); // <- will dump something like "call someMethod(args=[1,2,3])"
+
+</pre>
+</div>
+
+
+</p>
+
+
+<h3 id="#eventx">Dynamic events</h3>
+
+<p>
+Just my implementation of dynamic events. Sometimes it's more convenient
+to use single event class with "dynamic" properties instead of creating custom Event based
+classes for each type of event. I'd be happy if Adobe includes some dynamic event implementation 
+into framework to prevent each developer create own implementation (<i>Note: in Flex 3, mx.events.DynamicEvent 
+provides correct implementation for clone method</i>). Source code listed below works well with events 
+sent between different modules/application domains. Keypoint is "clone" method, as sometime
+event dispatcher send cloned version instead of original one (event redispatching). Note: current "copy" 
+method implementation is not well designed for performance, but it works:
+</p>
+
+<div>
+<pre class=sampleCode>
+
+package common
+{
+	import flash.events.Event;
+	
+	public dynamic class EventX extends Event
+	{
+		public function EventX(type:String, bubbles:Boolean = false, cancelable:Boolean = false):void
+		{
+			super(type, bubbles, cancelable);
+		}
+		
+		public override function clone():Event
+		{
+			return Event(copy(type, bubbles, cancelable));
+		}
+		
+		public function copy(type:String, bubbles:Boolean = false, cancelable:Boolean = false):EventX
+		{
+			var evt:EventX = new EventX(type, bubbles, cancelable);
+			
+			// skip standard props
+			var std:Object = {};
+			for(var p1:String in evt)
+				std[p1] = true;
+				
+			for(var p2:String in this)
+			{
+				if( std[p2]!=null ) continue;
+				evt[p2] = this[p2];
+			}
+			
+			return evt;
+		}
+		
+	}
+}
+</pre>
+</dev>
+
+<h3 id="transient">[Transient] metadata flag</h3>
+Sometimes it's usefull to hide some AS object public R/W properties from AMF 
+serialization process. 
+Similar functionality implemented in MS world for many years before, 
+(e.g. [XmlIgnore] in .NET XML serialization). Now it's possible 
+to control the same statically from AS3:
+
+<div>
+<pre class=sampleCode>
+package
+{
+	[RemoteClass(alias="FooVO")]
+	public class FooVO
+	{
+		// public field
+		public var prop1:String;
+
+		// hidden field
+		[Transient]
+		public var prop2:Array;
+	}
+}
+</pre>
+</dev>
+
+
+Areas of applying - all places using AMF encoding, 
+e.g. RemoteObject, NetConnection, ObjectUtil.copy, etc.
+
+
+
+<h3 id="tamarin">ActionScript 3 VM source code aka "Tamarin"</h3>
+Many thanks for <a href="http://blogs.adobe.com/aharui/">Alex Harui</a> for 
+enlightening me about AS3 VM source code, it's known as Tamarin open source project now:<br>
+<br>
+&nbsp;Home page: <a href="http://www.mozilla.org/projects/tamarin/">http://www.mozilla.org/projects/tamarin/</a><br>
+&nbsp;Source code: <a href="http://hg.mozilla.org/tamarin-central/">http://hg.mozilla.org/tamarin-central/</a>
+<br>
+<br>
+I always was interested in "playerglobal.swc" objects native implementation, 
+this project provides one more crumb in these fields.
+
+
+<h3 id="nemo440">Nemo 440</h3>
+<p>
+	My free time (25th hour in day), created simple toy, useful in underwater digging. Program prototype in studio!:<br> 
+<br> 
+&nbsp;<a href="http://www.docsultant.com/nemo440/">Nemo 440</a> - advanced ActionScript 3/ABC2/Flex 2/Flex 3/AIR disassembler. 
+</p>
+
+<h3 id="uerror">Unhandled errors handler</h3>
+<p>Flex/AS/Flash were always missing global hook for unhandled errors like SetUnhandledExceptionFilter in Win32, 
+Application.ThreadException in .NET etc. But Flex 3 framework introduced new functionality to intercept
+some subset of these errors. Usage sample listed below, it's hardcoded to always invoke debugger 
+in case of unhandled error:
+<div>
+<pre class=sampleCode>
+&lt;?xml version="1.0" encoding="utf-8"?>
+&lt;mx:Application 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	initialize="constructor()"
+>
+
+&lt;mx:Button label="Error" click="callLater(doError)"/>
+&lt;mx:Button label="Still not supported" click="doError()"/>
+
+&lt;mx:Script>&lt;![CDATA[
+import mx.core.UIComponentGlobals;
+import mx.controls.Alert;
+
+private function constructor():void
+{
+	UIComponentGlobals.catchCallLaterExceptions = true;
+	Application.application.systemManager.addEventListener("callLaterError", this_callLaterError);
+}
+
+private function doError():void
+{
+	throw new Error('Dummy error');
+}
+
+private function this_callLaterError(evt:*):void
+{
+	Alert.show("Unhandled error: "+evt.error);
+	var bypassToDebugger:Boolean = true;
+	if( bypassToDebugger )
+		throw evt.error;
+}
+		
+]]>&lt;/mx:Script>
+&lt;/mx:Application>
+</pre>
+
+</p>
+
+<h3 id="f2f3">Flex 3 + Flex 2 = 0 ?</h3>
+<p>
+Recently I needed to host Flex 2.0 SWF application movie inside Flex 3.0 one. 
+First attempt to use SWFLoader introduced many runtime errors. 
+So I created simple class for this purposes. Main idea was 
+to specify separate application domain for Flex 2 application to prevent 
+runtime/framework classes interference with Flex 3 implementation. May be this 
+problem is fixed or described already, but unfortunately I didn't find solution 
+at the moment of writing.
+<br> 
+
+<div>
+<pre class=sampleCode>
+package
+{
+	import flash.system.ApplicationDomain;
+	import flash.system.LoaderContext;
+	import mx.controls.SWFLoader;
+	
+	public class Flex2Loader extends SWFLoader
+	{
+		public function Flex2Loader()
+		{
+			loaderContext = new LoaderContext(false, new ApplicationDomain(null));
+			scaleContent = false;
+			addEventListener("resize", updateSize);
+			addEventListener("complete", this_complete);
+		}
+		
+		private function updateSize(... rest):void
+		{
+			if( content!=null )
+				Object(content).setActualSize(width, height);
+		}
+				
+		private function this_complete(evt:*):void
+		{
+			if( content!=null )
+				content.addEventListener("applicationComplete", updateSize);
+		}
+	}
+}
+</pre>
+</div>
+
+<p>Usage sample:</p>
+<div>
+<pre class=sampleCode>
+&lt;?xml version="1.0" encoding="utf-8"?>
+&lt;mx:Application
+ 	xmlns:local="*"
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+>
+	&lt;local:Flex2Loader width="100%" height="100%" autoLoad="true" source="foo.swf" />
+&lt;/mx:Application>
+</pre>
+</div>
+
+<p>
+Note: To prevent any cross-domain security problems, ensure that 
+hosted application (in our example - foo.swf) listed container 
+domain as trusted one. In other words executes "Security.allowDomain('*')" 
+on early initialization stage
+('*' - is bad example from security perspective, and 
+essential for development).
+</p>
+
+
+<h3 id="airflash">How to determine Flash container type?</h3>
+<p>
+Sometimes it's necessary to know Flash player container type used to 
+execute current Flex code. This simple question was asked on Yahoo groups - 
+<a href="http://tech.groups.yahoo.com/group/flexcoders/message/104228">How do you detect AIR vs Flash Player at runtime?</a>
+Quick answer is to check "flash.system.Security.sandboxType"  
+or "flash.system.Capabilities.playerType" properties depending on situation.
+More information is available in AS3 documentation.
+</p>
+
+
+<h3 id="objtype">Object type equality</h3>
+<p>
+All we know "is" AS3 operator. Recently found in Adobe source code
+one interesting way to check object type equality. 
+I don't know if this is legal way, but at least it
+works with Flex 2/3:
+</p>
+
+<div>
+<pre class=sampleCode>
+
+public class A {}
+	...
+public class B extends A {}
+	...
+<b>
+private function typeEquals(o:*, cls:Class):Boolean
+{
+	return o==null?false:Object(o).constructor==cls;
+}	 </b>
+
+private function test():void
+{
+	var a:A = new A();
+	var b:B = new B();
+	var c:C = new C();
+	
+	trace("typeEquals(a, A) "+typeEquals(a, A));
+	trace("typeEquals(a, B) "+typeEquals(a, B));
+	trace("typeEquals(b, A) "+typeEquals(b, A));
+	trace("typeEquals(b, B) "+typeEquals(b, B));
+	trace("a is A "+(a is A));
+	trace("a is B "+(a is B));
+	trace("b is A "+(b is A));
+	trace("b is B "+(b is A));
+}
+
+
+<i>
+/*
+	Output:
+
+	typeEquals(a, A) true
+	typeEquals(a, B) false
+	typeEquals(b, A) false
+	typeEquals(b, B) true
+	a is A true
+	a is B false
+	b is A true
+	b is B true
+
+*/
+</i>
+</pre>
+</div>
+
+
+<h3 id="mpi">Tracing data services performance MPI Data</h3>
+<p>
+Just quick steps how to add client-side logging functionality
+for Flex Data Services in BlazeDS/LCDS.
+Complete documentation about measuring performance 
+in BlazeDS/LCDS services described in Adobe 
+<a href="http://blogs.adobe.com/flexdoc/pdf/mpi.pdf">Measuring Message Processing Performance</a> 
+document.
+</p>
+
+<p>1) Enable MPI functionality in BlazeDS/LCDS. Edit channel definitions
+you want to trace in /WEB-INF/flex/services-config.xml 
+file and add "record-message-times"/"record-message-sizes" options :</p>
+<div><pre class=sampleCode>
+
+...
+&lt;channel-definition id="my-amf" class="mx.messaging.channels.AMFChannel">
+	&lt;endpoint url="http://{server.name}:{server.port}/{context.root}/messagebroker/amf" class="flex.messaging.endpoints.AMFEndpoint"/><b>
+	&lt;properties>
+		&lt;record-message-times>true&lt;/record-message-times>
+		&lt;record-message-sizes>true&lt;/record-message-sizes>
+	&lt;/properties></b>
+&lt;/channel-definition>
+...
+
+</pre></div>
+
+<p>2) Configure logger, e.g:</p>
+<div><pre class=sampleCode>
+&lt;mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" <b>preinitialize="constructor()"</b>>
+&lt;mx:Script>&lt;![CDATA[
+
+import mx.logging.Log;
+import mx.logging.LogEventLevel;
+import mx.logging.targets.TraceTarget;
+<b>
+private function constructor():void
+{
+	var t:TraceTarget = new TraceTarget();
+	t.level = LogEventLevel.DEBUG;
+	Log.addTarget(t);
+}</b>
+]]>&lt;/mx:Script>
+&lt;/mx:Application>
+
+</pre></div>
+
+
+<p>3) See all traces in Eclipse console window, (not only MPI ones that listed below):</p>
+
+<div><pre class=sampleCode><i>
+...
+Original message size(B): 654
+Response message size(B): 566
+Total time (s): 0.969
+Network Roundtrip time (s): 0.953
+Server processing time (s): 0.016
+Server non-adapter time (s): 0.016
+...</i>
+
+</pre></div>
+
+
+<p>4) Use "mx.messaging.messages.MessagePerformanceUtils" class for any custom preformance data processing:</p>
+
+<div><pre class=sampleCode>
+
+private function messageHandler(message:IMessage):void
+{<b>
+	var m:MessagePerformanceUtils = new MessagePerformanceUtils(message);
+	trace("[messageHandler] "+m.prettyPrint());</b>
+	...
+}
+
+/*<i>
+	Output:
+
+	[messageHandler] Original message size(B): 469
+	Response message size(B): 965
+	Total time (s): 0.016
+	Server processing time (s): 0.031
+	Server non-adapter time (s): 0.031
+	PUSHED MESSAGE INFORMATION:
+	Total push time (s): 1.688
+	Originating Message size (B): 521
+	Server poll delay (s): 1.641
+	</i>
+*/
+
+</pre></div>
+
+
+<h3 id="dt">Design-time mode</h3>
+<p>
+With Flex Builder 3 Adobe team moved MXML designer in direction closer to real code.
+According to framework sources it was started in FB2, but somehow amount of user AS3 code
+executed in designer for Flex 2 was almost 0. Based on my results with FB3 now components AS3 code can be
+executed in IDE designer, but component has to be declared in separate project (e.g. library).
+Note: IDE often won't detect changes immediately, so you will need to completely rebuild project
+and restar Eclipse to see changes in designer. Also not all code executed at design time at all, (e.g. 
+binding code usually ignored). 
+</p>
+
+<p>
+<i>mx.core.UIComponentGlobals</i> class provides <i>designMode</i> static property to 
+control component behaviour. With help of this flag now it's possible to 
+execute specific to designer code only at design-time and prevent real runtime
+code from execution in IDE. <i>UIComponentGlobals.designMode</i> declared as:
+
+</p>
+
+<div><pre class=sampleCode>
+/**
+      *  A global flag that can be read by any component to determine
+      *  whether it is currently executing in the context of a design
+      *  tool such as Flex Builder's design view.  Most components will
+      *  never need to check this flag, but if a component needs to
+      *  have different behavior at design time than at runtime, then it
+      *  can check this flag.
+  */
+    public static function get designMode():Boolean
+    {
+            return mx_internal::designTime;
+    }
+
+</div></pre>
+
+
+<h3 id="reboot">Light reboot</h3>
+<p>Created simple code example that demonstrates how it's
+possible to restart	AIR application on the fly. The same functionality is possible with
+help of well known browser API SWF from Adobe, but this sample is even simpler - no need 
+for external SWF at all:
+</p>
+
+<p>reboot.as:</p>
+<div><pre class=sampleCode>
+package
+{
+	import mx.core.Application;
+	import mx.core.WindowedApplication;
+	import adobe.utils.ProductManager;
+
+	public function reboot():void
+	{
+		var app:WindowedApplication = WindowedApplication(Application.application);
+		var mgr:ProductManager = new ProductManager("airappinstaller");
+		<b>mgr.launch("-launch "+app.nativeApplication.applicationID+" "+app.nativeApplication.publisherID);</b>
+		app.close();
+	}
+}</div></pre>
+
+<p>lightReboot.mxml:</p>
+<div><pre class=sampleCode>
+&lt;?xml version="1.0" encoding="utf-8"?>
+&lt;mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+	&lt;mx:Button label="Reboot me" click="reboot()"/>
+&lt;/mx:WindowedApplication>
+</div></pre>
+
+<p>Ensure "allowBrowserInvocation" option is turned on in AIR application descriptor template:</p>
+<div><pre class=sampleCode>
+&lt;allowBrowserInvocation>true&lt;/allowBrowserInvocation>
+</div></pre>
+
+<p>And finally compiled demo application: <a href="lightReboot.air">lightReboot.air</a></p>
+
+
+<h3 id="pubid">Discover AIR Publisher ID on Windows</h3>
+<p>AIR Publisher ID is necessary when working with browser API. "nativeApplication.publisherID" 
+property provides this information at runtime. Alternative way to discover this information in Windows
+without source code modification described below:
+</p>
+
+<p>
+1) Install certain AIR application.<br>
+2) Go to installation folder and locate "\META-INF\AIR\publisherid" file. E.g. for previous app it's "C:\Program Files\lightReboot\META-INF\AIR\publisherid"<br>
+3) See content of "publisherid" text file, this is Publisher ID. E.g. lightReboot Publisher ID is "E15D8FFF9A3B1300D0966192A76DCB374DC2ACDE.1".
+</p>
+
+
+<h3 id="olapexample2">Extended Adobe OLAPDataGridExample</h3>
+<p>
+	In documentation to OLAPDataGrid Adobe provides "OLAPDataGridExample.mxml" sample
+	demonstrating base control usage. I've extended this code with ability to
+	track selected item as a result of user interaction. Main features implemented in 
+	this example are:
+</p>
+<ul>
+	<li>Use number formatter to display OLAP grid data</li>
+	<li>Determine X coordinate for selected item</li>
+	<li>Determine Y coordinate for selected item</li>
+	<li>Determine selected item raw value</li>
+	<li>Determine selected item formatted value</li>
+</ul>
+
+<p>Code snip responsible for this functionality:</p>
+
+<div><pre class=sampleCode>
+&lt;local:OLAPDataGrid2 id="myOLAPDG" width="100%" height="100%"
+	<b>change="myOLAPDG_change(event)"</b>
+>
+	&lt;local:itemRendererProviders>
+		&lt;mx:OLAPDataGridItemRendererProvider 
+			uniqueName="[QuarterDim].[Quarter]"
+			type="{OLAPDataGrid.OLAP_HIERARCHY}"
+			<b>formatter="{fmtNumber}"/></b>
+	&lt;/local:itemRendererProviders>
+&lt;/local:OLAPDataGrid2>
+
+...
+
+<b>
+private function myOLAPDG_change(evt:ListEvent):void
+{
+	var odg:OLAPDataGrid2 = OLAPDataGrid2(evt.target); 
+	var dp:IOLAPResult = odg.dataProvider  as IOLAPResult;
+	
+	
+	var posRow:IOLAPAxisPosition = odg.selectedItem as IOLAPAxisPosition;
+	if( posRow==null ) return;
+	if( posRow.members.length==0 ) return;
+	
+	// 1) calculate row value
+	var mRow:IOLAPMember = posRow.members.getItemAt(0) as IOLAPMember;
+	var valRow:* = mRow.name;
+	
+	
+	// 2) calculate col value 
+	var columnAxis:IOLAPResultAxis = dp.getAxis(OLAPDataGrid.COLUMN_AXIS);
+	var rowAxis:IOLAPResultAxis = dp.getAxis(OLAPDataGrid.ROW_AXIS);
+	
+	var numHeaderCols:int = 0;
+	var firstRow:IList = IOLAPAxisPosition(rowAxis.positions.getItemAt(0)).members;
+	numHeaderCols = firstRow.length;
+	
+	var colNum:int = evt.columnIndex-numHeaderCols;
+
+	var posCol:IOLAPAxisPosition = null;
+	var valCol:* = null;
+	
+	if( colNum>=0 )
+	{
+		posCol = columnAxis.positions.getItemAt(colNum) as IOLAPAxisPosition;
+		if( posCol.members.length!=0 )
+		{
+			var mCol:IOLAPMember = posCol.members.getItemAt(0) as IOLAPMember;
+			var valCol:* = mCol.name;
+		}
+	}
+	
+	// 3) calculate cell value
+	var valCell:* = null;
+	var valCellFmt:* = null;	
+	if( colNum>=0 )
+	{
+		var rowNum:int = evt.rowIndex;
+		if( rowNum>=odg.lockedRowCount )
+			rowNum+= Math.max(0, odg.verticalScrollPosition);
+	
+		if( rowNum>=0 )
+		{
+			var cell:IOLAPCell = dp.getCell(rowNum, colNum);
+			if( cell!=null )
+			{
+				valCell    = cell.value;
+				valCellFmt = odg.getFormattedCellValue2(valCell, posRow, posCol);   
+			}
+		}	
+	}
+	
+	var msg:String = "User click:\n\n [row]\t: "+valRow;
+	msg += "\n [col]\t: "+valCol;
+	msg += "\n [cell data]\t: "+valCell;
+	msg += "\n [cell label]\t: "+valCellFmt;
+	
+	Alert.show(msg, "Dialog"); 
+}	
+</b>	
+</div></pre>
+
+<p>Screenshot for the sample:</p>
+<img src="OlapGridSample.jpg"></img>
+
+<p>Source code to download - <a href="OlapGridSample.zip ">OlapGridSample.zip</a> .</p>
+
+
+
+<h3 id="ie8http200">IE8 "NetConnection.Call.Failed HTTP: Status 200" workaround</h3>
+<p>
+	Few words about Adobe bug <a href="http://bugs.adobe.com/jira/browse/SDK-21005">"pinging endpoint Returns a HTTP: Status 200 in ie8"</a>.
+	
+	<p>With new IE8 release in some system configuration remoting with BlazeDS stopped to work.
+	This problem is not always reproducable and not only related to Vista computers. It can be
+	on Windows XP and Windows server 2003 platforms. 
+	
+	
+	<p>Bug behaviour is very strange, initially application works fine, but after some moment it stopped to work
+	reporting following error:
+	
+<div><pre class=sampleCode>	
+[DEBUG] mx.messaging.Channel 'my-amf' channel got status. (Object)#0 
+  code = "NetConnection.Call.Failed" 
+  description = "HTTP: Status 200" 
+  details = "http://localhost:7001/demo/messagebroker/amf" 
+  level = "error"
+
+</pre></div>	 
+
+	After this moment problem persists forever. IE reboot or cache clearing doesn't help. 
+	Any Flex application started after this moment produces this error when establishing
+	AMFChannel communication. Initially Flex sends command message 5 (CommandMessage.CLIENT_PING_OPERATION)
+	to server side, server side sends correct ACK message back, but somehow Flash player
+	NetConnection treats it as error, in despite the fact status is 200.  
+	So Flex RPC library receives "netStatus" event with code "NetConnection.Call.Failed"
+	and level "error".
+	 
+	<p>This error is cross-domain and may be even "cross-path". Once it happened with box A, it definitelly start
+	reproducing with box B, C, localhost etc. Our systems use default /messagebroker/amf path for AMF channel endpoint. 
+	Internet cache is located in place like "C:\Documents and Settings\User1\Local Settings\Temporary Internet Files\Content.IE5\". 
+	Empirically we determined that internet cache folders contains many files starting with "amf", e.g. amf[1], amf[2]. etc.
+	When these files are deleted manually (note: that standard explorer usually hides files, use command-line screen for
+	these purposes or some script), system always restores state. On systems with IE8 problem number of "amf"
+	cache files growth with each request. Usually fresh system allows 50 "NetConnection.call" requests, first is 
+	ping (command message 5) and 49 application ones. Also maximal file number I saw in cache was amf[11]. Systems without 
+	the problem usually create 4 amf[1] files -	for one file in each cache subfolder.   
+	
+	Probably for CF users these files will start with "flex2gateway" or in case of "flex2gateway//" fix
+	will be just noname e.g. [1], [2], [10] etc.
+
+	<p>Solution with <a href="http://jake.cfwebtools.com/2009/02/26/flex-channelconnectfailed-error-netconnectioncallfailed-http-status-200/">add-no-cache-headers</a> 
+	option set to false doesn't help. May be exist some configuration option in IE8 or Flash player
+	or some custom HTTP header which can fix this issue, but at this moment I am not aware about this.
+	
+	<p>Hope Microsoft or Adobe will fix this issue with time. Charles proxy
+	session reported in bug system won't help Adobe to fix this problem, as on socket and data level all is good,
+	problem lies in Flash player NetConnection native code + IE8 HTTP asynchronous pluggable protocol
+	implementation. 
+	
+	<p>For people already taken to the Flex needle and suffering from problem with
+	behaviour described above, following solutions might help:
+	
+	<p><b>A)</b> Idea is simple, just use another communication channel,
+	say AMFX, may be it's less efficient, but it will work:
+	
+	<p>Check that "services-config.xml" contains uncommented HTTPChannel/HTTPEndpoint configuration: 
+	
+	  
+<div><pre class=sampleCode>
+
+        &lt;channel-definition id="my-http" class="mx.messaging.channels.HTTPChannel">
+            &lt;endpoint url="http://localhost:8080/demo/messagebroker/http" class="flex.messaging.endpoints.HTTPEndpoint"/>
+        &lt;/channel-definition>
+        
+</pre></div>
+	
+	 And then specify it in "remoting-config.xml":
+	 
+<div><pre class=sampleCode>
+
+    &lt;default-channels>
+        &lt;channel ref="my-http"/>
+    &lt;/default-channels>
+        
+</pre></div>
+	
+	It's also possible to list there binary AMF channel, so AMFX will be backup one. That is all fix.  
+	Unfortunately AMFX channel comparing to AMFX one has worse performance, is not mature and
+	has problem with deserialization of complex structures like arrays inside arrays, 
+	unclear thing there is also how URLLoader upstream will work with large data sets.	
+</p>
+
+<p><b>B)</b> Implement AMFChannel extension to use dynamic endpoint URL. Note: just to prevent someone from spending time -
+adding parameters to endpoint URL won't help, e.g. .../messagebroker/amf?uid=321. URL path should be differenet,
+e.g. /messagebroker/amf321, /messagebroker/amfsomeanother123, etc. 
+It will require in modifications for both client and server code. On server by default endpoints are stored in 
+hash map with strict key like  .../messagebroker/amf etc. So create custom message broker that will
+somehow locate necessary endpoint based on dynamic path. Or create servlet/filter around standard message broker servlet 
+which will prepare request to be acceptable by standard broker implementation.
+
+<p>On client side create custom AMFChannel that will periodically reconnect to server side with different
+URL (by creating new NetConnection object). It's possible to make reconnect not for every request, but with
+some periodicity, say one time per 10-40 requests.  
+</p>
+
+<p><b>C)</b> Try to use if possible secured AMF communication - actually I didn't test it, but may be caching will work
+in good way there.  
+</p>
+
+<p><b>D)</b> Try to find options in system which will make cache working in normal way. It can be some key in registry,
+internet explorer option, header, security constraint etc.
+
+<p><b>E)</b> Stand aside of MS products and MS dependency now and in future, make your way more open and flexible. 
+
+<div><pre class=sampleCode>
+</pre></div>
+
+
+
+<p>Have a fun.</p>
+
+
+<hr>
+<div>
+Revision:18, Last Modified: Aug/28/09 08:43 AM,
+Copyright &copy; <a href="mailto:vmelnikREPLACEITdocsultant.com">Vadim Melnik </a> 2005-2009.
+Visit my <a href="http://www.docsultant.com/">Homepage</a>.
+
+</div>
+</body>
+
+</html>
+

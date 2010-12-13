@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" height="20" paddingLeft="5">
+	<mx:Script>
+		<![CDATA[
+			[Bindable]
+			public var propertyName:String;
+			[Bindable]
+			public var checkBool:Boolean = false;
+			public var propertyID:int;
+			public var dataName:String;
+			public var dataType:String;
+		]]>
+	</mx:Script>
+</mx:HBox>

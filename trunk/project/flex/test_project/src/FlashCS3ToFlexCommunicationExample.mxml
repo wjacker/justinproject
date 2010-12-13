@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="absolute" 
+	backgroundGradientColors="[#ffffff, #ffffff]"
+	creationComplete="init();" viewSourceURL="srcview/index.html">
+	
+	<mx:Script>
+		<![CDATA[
+			
+			/**
+			 * * * * * * * * * * * * * * * * * 
+			 * Sean Moore                    *  
+			 * www.seantheflashguy.com/blog  *
+			 * seantheflashguy@gmail.com     * 
+			 * * * * * * * * * * * * * * * * * 
+			 * 09/28/07
+			 * Basic Flex to Flash CS3 communication test.
+			 * Note: The Flash CS3 FLA must be set to
+			 * Flash Player 9 and the AS version must be
+			 * ActionScript 3.0 in the File -> Publish Settings
+			*/
+			
+			private var loadedSWFMainTimeline:*;
+			private var animhorse_mc:MovieClip;
+			
+			private function init():void
+			{				
+			}
+			
+			private function onAnimhorseSWFCompleted(event:Event):void
+			{
+				// get a reference to the main timeline
+				loadedSWFMainTimeline = animhorseSWF.content;
+				// call the setFlashText function on the loaded SWFs main timeline
+				// you could access properties on the main timeline or
+				// access methods and/or properties in the SWFs Movie Clips
+				loadedSWFMainTimeline.setFlashText("Click the Flex Buttons to animate the Flash CS3 horse MovieClip.");
+				
+				// get a reference to the animated horse Movie Clip
+				animhorse_mc = loadedSWFMainTimeline.animhorse_mc;				
+			}
+			private function onStepForwardBtnClicked(event:MouseEvent):void
+			{
+				// call the native nextFrame method for the 
+				// MovieClip from the Flash CS3 SWF
+				// this could be a custom method as well
+				if (animhorse_mc) {
+					animhorse_mc.nextFrame();
+				}
+			}
+			private function onStepBackBtnClicked(event:MouseEvent):void
+			{
+				// call the native prevFrame method for the 
+				// MovieClip from the Flash CS3 SWF
+				if (animhorse_mc) {
+					animhorse_mc.prevFrame();
+				}
+			}
+		]]>
+	</mx:Script>	
+	<mx:SWFLoader id="animhorseSWF"
+		y="75" 
+		source="Animhorse.swf" 
+		horizontalCenter="0"
+		complete="onAnimhorseSWFCompleted(event);"/>
+	<mx:Button id="stepForwardBtn" 
+		y="328" 
+		label="&gt;&gt;" 
+		horizontalCenter="39"
+		click="onStepForwardBtnClicked(event);"/>
+	<mx:Button id="stepBackBtn" 
+		y="328" 
+		label="&lt;&lt;" 
+		horizontalCenter="-41"
+		click="onStepBackBtnClicked(event);"/>	
+</mx:Application>

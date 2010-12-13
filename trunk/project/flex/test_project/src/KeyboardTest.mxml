@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" applicationComplete="onStart()" backgroundGradientColors="[#000000, #AAAAAA]">
+
+<!--
+
+***Coded by Matt Le Fevre***
+
+For Terms and Conditions please visit
+
+www.MattLeFevre.com/usage.php
+
+-->
+
+	<mx:Script>
+		<![CDATA[
+		
+			[Bindable]
+			public var lblFontSize:int = 12;
+			
+			private var i : Number = 0;
+		
+			private function onStart():void
+			{
+				this.focusEnabled = true
+				stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyPress)
+			}
+			
+			private function handleKeyPress(event:KeyboardEvent):void
+			{
+				count.text = i + "count";
+				i++;
+				keyLabel.text = "You pressed key code: " + event.keyCode;
+				shiftLabel.text = "The Shift key was not pressed...";
+				cntrlLabel.text = "The Control key was not pressed...";
+				
+				if((event.shiftKey) || (event.keyCode == 16))
+				{
+					shiftLabel.text = "The Shift key was pressed...";
+				}
+				else
+					if((event.ctrlKey) || (event.keyCode == 17))
+					{
+						cntrlLabel.text = "The Control key was pressed...";
+					}
+					
+				if(event.keyCode == 90)
+				{
+					if(lblFontSize < 15)
+					{
+						lblFontSize++;
+					}
+				}
+				
+				if(event.keyCode == 88)
+				{
+					if(lblFontSize > 5)
+					{
+						lblFontSize--;
+					}
+				}
+				
+				if((event.ctrlKey) && (event.keyCode == 65))
+				{
+					box1.setStyle('backgroundColor', '#FFFFFF');
+				}
+				
+				if((event.ctrlKey) && (event.keyCode == 83))
+				{
+					box1.setStyle('backgroundColor', '#FF0000');
+				}
+				
+				if((event.ctrlKey) && (event.keyCode == 81))
+				{
+					box1.setStyle('backgroundColor', '#000000');
+				}
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:Box id="box1" width="300" height="150" backgroundColor="#000000" alpha="0.5" cornerRadius="8" borderStyle="solid">
+		<mx:VBox width="100%" height="100%" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+			<mx:Label id="count" fontSize="{lblFontSize}" text="sdf" fontFamily="Verdana" color="#FFFFFF"/>
+			<mx:Label id="keyLabel" fontSize="{lblFontSize}" text="Click on this App, then press a key..." fontFamily="Verdana" color="#FFFFFF"/>
+			<mx:Label id="shiftLabel" fontSize="{lblFontSize}" fontFamily="Verdana" color="#FFFFFF"/>
+			<mx:Label id="cntrlLabel" fontSize="{lblFontSize}" fontFamily="Verdana" color="#FFFFFF"/>
+			
+			<mx:Text text="asdf sdf sdf sd fsd fsd f">
+				
+			</mx:Text>
+			<mx:TextInput/>
+		</mx:VBox>
+	</mx:Box>
+	
+	
+</mx:Application>

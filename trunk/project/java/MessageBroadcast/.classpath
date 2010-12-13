@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" output="test-classes" path="test"/>
+	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="libs/appengine-api.jar"/>
+	<classpathentry kind="lib" path="libs/flex-messaging-common.jar"/>
+	<classpathentry kind="lib" path="libs/flex-messaging-core.jar"/>
+	<classpathentry kind="lib" path="libs/flex-messaging-opt.jar"/>
+	<classpathentry kind="lib" path="libs/flex-messaging-proxy.jar"/>
+	<classpathentry kind="lib" path="libs/flex-messaging-remoting.jar"/>
+	<classpathentry kind="lib" path="libs/flex-rds-server.jar"/>
+	<classpathentry kind="lib" path="libs/geronimo-jpa_3.0_spec-1.1.1.jar"/>
+	<classpathentry kind="lib" path="libs/geronimo-jta_1.1_spec-1.1.1.jar"/>
+	<classpathentry kind="lib" path="libs/jdo2-api-2.3-eb.jar"/>
+	<classpathentry kind="lib" path="libs/spring-aop-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-asm-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-beans-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-context-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-context-support-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-core-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-expression-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-jdbc-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-security-acl-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-security-config-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-security-core-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-security-taglibs-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-security-web-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-tx-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-web-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/spring-webmvc-3.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/org.springframework.flex.roo.addon-1.0.0.M1.jar"/>
+	<classpathentry kind="lib" path="libs/org.springframework.flex.roo.annotations-1.0.0.M1.jar"/>
+	<classpathentry kind="lib" path="libs/spring-flex-core-1.5.0.M1.jar"/>
+	<classpathentry kind="lib" path="libs/aopalliance-1.0.jar"/>
+	<classpathentry kind="output" path="war/WEB-INF/classes"/>
+</classpath>
