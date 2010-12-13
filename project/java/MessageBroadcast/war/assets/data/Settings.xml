@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CONFIG>
+    <APPSERVER>
+        <server>172.20.30.237</server>
+        <port>8080</port>
+        <appName>lisa</appName>
+        <logTarget>FlexDebug</logTarget>
+        <logLevel>DEBUG</logLevel>
+        <debugModel>true</debugModel>
+    </APPSERVER>
+</CONFIG>

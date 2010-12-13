@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	title="Add RSS">
+	<mx:Metadata>
+		[Event(name="addRss",type="flash.events.Event")]
+		[Event(name="updateRss",type="flash.events.Event")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			import mx.events.CloseEvent;
+			[Bindable]
+			public var rssVO : RssVO;
+			
+			public var type : String;
+			
+			public function saveRss() : void
+			{
+				rssVO.name = rssName.text;
+				rssVO.url = rssURL.text;
+				if(type == "Edit")
+				{
+					this.dispatchEvent(new Event("updateRss"));
+				}
+				else
+				{
+					this.dispatchEvent(new Event("addRss"));
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:Form>
+		<mx:FormItem label="RSS Name:">
+			<mx:TextInput width="200" id="rssName" text="{rssVO.name}"/>
+		</mx:FormItem>
+		<mx:FormItem label="RSS URL:">
+			<mx:TextInput width="200" id="rssURL" text="{rssVO.url}"/>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:HBox horizontalAlign="right" width="100%">
+		<mx:Button label="Save" click="saveRss()"/>
+		<mx:Button label="Cancel" click="PopUpManager.removePopUp(this)"/>
+	</mx:HBox>
+</mx:TitleWindow>

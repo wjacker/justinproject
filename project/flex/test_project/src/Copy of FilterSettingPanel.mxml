@@ -1,0 +1,854 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+    width="680" title="Filter Setting" close="PopUpManager.removePopUp(this)" 
+    xmlns:scenariomanagement="com.lombardrisk.jupiter.view.components.scenariomanagement.*"
+    creationComplete="init();"
+    height="540"
+    horizontalScrollPolicy="off"
+    verticalScrollPolicy="off">
+    <mx:Script>
+        <![CDATA[
+        	import com.lombardrisk.jupiter.model.vo.CashflowCategoryCriteria;
+        	import mx.controls.RadioButton;
+        	import com.lombardrisk.jupiter.model.vo.LiquidityDataField;
+            import com.lombardrisk.jupiter.model.business.service.ConfigurationManager;
+        	import mx.controls.Alert;
+        	import mx.collections.ArrayCollection;
+        	import com.lombardrisk.jupiter.view.FilterSettingMediator;
+        	import com.lombardrisk.jupiter.ApplicationFacade;
+        	import com.lombardrisk.jupiter.util.JupiterConstants;
+            import com.lombardrisk.jupiter.util.JupiterUtil;
+            import com.lombardrisk.jupiter.model.vo.Criteria;
+        	import mx.formatters.SwitchSymbolFormatter;
+            import mx.managers.PopUpManager;
+            import com.lombardrisk.jupiter.util.ImagesResource;
+            [Bindable]
+            public var isUpdate:Boolean = true;
+            
+            [Bindable]
+            public var fieldListDP : ArrayCollection ;
+            
+            public var selectedRuleID:int = -1;
+            
+            public function init():void
+            {
+            	ApplicationFacade.getInstance().registerMediator(new FilterSettingMediator(this));
+//            	if(RBGRule.selection == null)
+//            	{
+//            		rb0.selected = true;
+//            	}
+//            	dispatchEvent(new Event(JupiterConstants.CURRENCY_GET)); 
+				field_change(); 
+            	callLater(sqllist_change);
+            }
+            
+            private function setFilterListIndex(obj:String,obj2:String):void
+            {
+            	for each ( var item:Object in filterValueList.listDP)
+            	{
+            		if(item == obj2)
+            		{
+            			filterValueList.list.selectedItem = item;
+            			filterValueList.list.scrollToIndex(filterValueList.list.selectedIndex);
+            			break;
+            		}
+            	}
+            }
+            
+            private function setGLCSelected(arr:Array):void
+            {
+            	filterValueGLC.setSelectItems(arr);
+            }
+            
+            private function field_change(val:String = null):void
+            {
+            	if(fieldList.selectedItem != null)
+            	{      
+            		fieldList.scrollToIndex(fieldList.selectedIndex);      		
+            		if(fieldList.selectedItem.labelName == "Currency")
+            		{
+            			dispatchEvent(new Event(JupiterConstants.CURRENCY_GET));
+            			if(val != null)
+            			{            				
+            				callLater(setFilterListIndex,["currencyCode",val]);
+            			}
+            		}
+            		else if(fieldList.selectedItem.labelName == "Country")
+            		{
+            			dispatchEvent(new Event(JupiterConstants.COUNTRY_GET));
+            			if(val != null)
+            			{
+            				callLater(setFilterListIndex,["countryCode",val]);
+            			}            			
+            		}
+            		/* else if(fieldList.selectedItem.labelName == "Industry Code")
+            		{
+            			dispatchEvent(new Event(JupiterConstants.INDUSTRY_GET));  
+            			if(val != null)
+            			{            				
+            				callLater(setFilterListIndex,["industryCode",val]);
+            			}           			          	
+            		} */
+            		else if(fieldList.selectedItem.labelName == "Institution Code")
+            		{
+            			dispatchEvent(new Event(JupiterConstants.INSTITUTION_GET));  
+            			if(val != null)
+            			{
+            				callLater(setFilterListIndex,["institutionCode",val]);
+            			}               			    		
+            		}
+            		else if(fieldList.selectedItem.labelName == "Maturity Date")
+            		{
+            			vs.selectedIndex = 1; 
+            			
+            		}
+            		else if(fieldList.selectedItem.labelName == "Notional Amount")
+            		{
+            			vs.selectedIndex = 3;
+            			
+            			filterValueTextInput.validateErrInfo = "";
+            			
+            			if(val != null)
+            			{
+            				filterValueTextInput.setFilterValueTxt(val);
+            				fieldList.scrollToIndex(fieldList.selectedIndex);
+            			}
+            			else
+            			{
+            				if(filterValueTextInput.txt)            			
+            				filterValueTextInput.txt.text = "";            			
+            			}
+            		}
+            		else if(fieldList.selectedItem.labelName == "Amount")
+            		{
+            			vs.selectedIndex = 3;
+            			
+            			filterValueTextInput.validateErrInfo = "";
+            			
+            			if(val != null)
+            			{
+            				filterValueTextInput.setFilterValueTxt(val);
+            				fieldList.scrollToIndex(fieldList.selectedIndex);
+            			}
+            			else
+            			{
+            				if(filterValueTextInput.txt)            			
+            				filterValueTextInput.txt.text = "";            			
+            			}
+            		}
+            		else if(fieldList.selectedItem.labelName == "Cashflow Amount")
+            		{
+            			vs.selectedIndex = 3;
+            			
+            			filterValueTextInput.validateErrInfo = "";
+            			
+            			if(val != null)
+            			{
+            				filterValueTextInput.setFilterValueTxt(val);
+            				fieldList.scrollToIndex(fieldList.selectedIndex);
+            			}
+            			else
+            			{
+            				if(filterValueTextInput.txt)            			
+            				filterValueTextInput.txt.text = "";
+            			
+            			}
+            		}
+            		else if(fieldList.selectedItem.labelName == "GLC1" 
+	            			|| fieldList.selectedItem.labelName == "GLC2"
+	            			|| fieldList.selectedItem.labelName == "GLC3"
+	            			|| fieldList.selectedItem.labelName == "GLC4"
+	            			|| fieldList.selectedItem.labelName == "Cashflow Category"
+	            			|| fieldList.selectedItem.labelName == "Industry Code")
+            		{
+            			
+            			if(fieldList.selectedItem.labelName == "Cashflow Category")
+            			{            				
+//            				dispatchEvent(new Event(JupiterConstants.GET_CASHFLOW_CATEGORY_TREE));            				
+            				dispatchEvent(new Event(JupiterConstants.GET_CASHFLOW_CATEGORY_LIST));            				
+            			}
+            			else if(fieldList.selectedItem.labelName == "Industry Code")
+            			{
+            				dispatchEvent(new Event(JupiterConstants.INDUSTRY_TREE_GET));
+            			}
+            			else
+            			{
+            				dispatchEvent(new Event(JupiterConstants.GLC_GET));
+            				
+            				if(val != null)
+	        				{
+								var valueStr:String = val.replace("(","");
+	            				valueStr = valueStr.replace(")","");
+	            				var valArr:Array = valueStr.split(",");
+	            				var newArr:Array = new Array();
+	            				for each(var s:Object in valArr)
+	            				{            					
+	            					s = s.toString().replace("'","");
+	            					s = s.toString().replace("'","");
+	            					newArr.push(s);
+	            				}
+	            				callLater(setGLCSelected,[newArr]);            					
+	        				}
+            			}
+            			
+            		}
+            		else if( fieldList.selectedItem.labelName == "CashflowCategoryID"
+            				|| fieldList.selectedItem.labelName == "CustomerID" 
+            				|| fieldList.selectedItem.labelName == "InstitutionCode"
+            				|| fieldList.selectedItem.labelName == "NotionalAmount"
+            				|| fieldList.selectedItem.labelName == "OriginalCurrency")
+//					else
+            		{
+            			vs.selectedIndex = 2;            			
+            			if(val != null)
+            			{            				
+            				var arr1:Array =val.split(" ");
+            				if(arr1.length ==2 && arr1[0] == "=")
+            				{
+            					filterValueText.setFilterValueTxt(arr1[1]);
+            				}
+            				else
+            				filterValueText.setFilterValueTxt(val);
+            			}
+            			else
+            			{
+            				if(filterValueText.txt)
+            				filterValueText.txt.text = "";
+            			}
+            		}
+            		else
+            		{
+            			if( fieldList.selectedItem.dataType == "datetime" 
+            				|| fieldList.selectedItem.dataType == "date" )
+            			{
+            				vs.selectedIndex = 1;
+            				filterValueDate.resetThis();
+            				if(val != null) 
+	            			{
+	            				var dateArr:Array = val.split("'");
+	            				if(dateArr.length == 5)
+	            				{
+	            					filterValueDate.exactRBSelected = true;
+	            					filterValueDate.perodRBSelected = true;
+	            					filterValueDate.vsSelectedIndex = 1;
+	            					filterValueDate.fromDateSelectedDate = new Date(dateArr[1]);
+	            					filterValueDate.toDateSelectedDate = new Date(dateArr[3]);
+	//            					startDate = dateArr[1];
+	//            					endDate = dateArr[3];
+	            				}
+	            				else if(dateArr.length == 1)
+	            				{
+	            					var arr:Array = val.split(" ");
+	            					if(arr.length == 2)
+	            					{
+	            						filterValueDate.perodRBSelected = false; 
+	            						switch(arr[0])
+	            						{
+	            							case "=":
+	            								filterValueDate.equalRBSelected = true;
+	            							break;
+	            							case ">":
+	            								filterValueDate.afterRBSelected = true;
+	            							break;
+	            							case "<":
+	            								filterValueDate.beforeRBSelected = true;
+	            							break;
+	            						}
+	            						filterValueDate.exactRBSelected = true;	            					
+		            					filterValueDate.vsSelectedIndex = 0;
+		            					filterValueDate.exactDateSelectedDate = new Date(arr[1]);
+	            					}
+	            					else if(arr.length == 4)
+	            					{
+	            						filterValueDate.exactRBSelected = false; 
+	            						filterValueDate.relativeRBSelected = true;
+		            					filterValueDate.vsSelectedIndex = 2;
+	            						filterValueDate.perodRBSelected = false; 
+	            						switch(arr[0])
+	            						{
+	            							case "=":
+	            								filterValueDate.equalRBSelected = true;
+	            							break;
+	            							case ">":
+	            								filterValueDate.afterRBSelected = true;
+	            							break;
+	            							case "<":
+	            								filterValueDate.beforeRBSelected = true;
+	            							break;
+	            						}
+	            						if(arr[1] == "MINUS") 
+	            						arr[2] = "-"+arr[2];
+	            						filterValueDate.relativeNumText = arr[2];
+	            						switch(arr[3])
+	            						{
+	            							case "DAYS":
+	            								filterValueDate.relativeDDSelected = true;
+	            							break;
+	            							case "MONTHS":
+	            								filterValueDate.relativeMMSelected = true;
+	            							break;
+	            							case "YEARS":
+	            								filterValueDate.relativeYYSelected = true;
+	            							break;
+	            						}
+	            						
+	            						
+	            					}
+	            					else if(arr.length == 12)
+	            					{
+	            						if(arr[0] == "BETWEEN")
+	            						{
+	            							filterValueDate.exactRBSelected = false;
+	            							filterValueDate.relativeRBSelected = true;
+			            					filterValueDate.perodRBSelected = true;
+			            					filterValueDate.vsSelectedIndex = 3;
+			            					
+			            					if(arr[3] == "MINUS") arr[4] = "-"+arr[4];
+			            					filterValueDate.relativeNumFromText = arr[4];
+			            					if(arr[9] == "MINUS") arr[10] = "-"+arr[10];
+			            					filterValueDate.relativeNumToText = arr[10];
+			            					
+			            					switch(arr[5])
+		            						{
+		            							case "DAYS":
+		            								filterValueDate.relativeNumFromDDSelected = true;
+		            							break;
+		            							case "MONTHS":
+		            								filterValueDate.relativeNumFromMMSelected = true;
+		            							break;
+		            							case "YEARS":
+		            								filterValueDate.relativeNumFromYYSelected = true;
+		            							break;
+		            						}
+		            						
+		            						switch(arr[11])
+		            						{
+		            							case "DAYS":
+		            								filterValueDate.relativeNumToDDSelected = true;
+		            							break;
+		            							case "MONTHS":
+		            								filterValueDate.relativeNumToMMSelected = true;
+		            							break;
+		            							case "YEARS":
+		            								filterValueDate.relativeNumToYYSelected = true;
+		            							break;
+		            						}
+	            						}            						
+	            					}
+	            				}
+	            			}
+            			}else if( fieldList.selectedItem.dataType == "varchar" )
+            			{
+            				vs.selectedIndex = 2;
+            				if(val != null)
+	            			{            				
+	            				var arr1:Array =val.split(" ");
+	            				if(arr1.length ==2 && arr1[0] == "=")
+	            				{
+	            					filterValueText.setFilterValueTxt(arr1[1]);
+	            				}
+	            				else
+	            				filterValueText.setFilterValueTxt(val);
+	            			}
+	            			else
+	            			{
+	            				if(filterValueText.txt)
+	            				filterValueText.txt.text = "";
+	            			}
+            			}else if( fieldList.selectedItem.dataType == "numeric" )
+            			{
+            				vs.selectedIndex = 3;
+            				filterValueTextInput.validateErrInfo = "";
+            			
+	            			if(val != null)
+	            			{
+	            				filterValueTextInput.setFilterValueTxt(val);
+	            				fieldList.scrollToIndex(fieldList.selectedIndex);
+	            			}
+	            			else
+	            			{
+	            				if(filterValueTextInput.txt)            			
+	            				filterValueTextInput.txt.text = "";
+	            			
+	            			}
+            			}
+            		}
+            	}
+            }
+            private function updateBtn_click():void
+            {
+            	if(sqlList.selectedIndex > -1)
+            	{       
+            		var curentIndex:int = sqlList.selectedIndex;
+            		var oldVO:Criteria = sqlList.selectedItem as Criteria;            		   
+					var vo:Criteria = getSqlVOFromUI();
+					vo.operator = oldVO.operator;
+//					vo.secondOperator = oldVO.secondOperator;
+					sqlListDP.setItemAt(vo, curentIndex);
+					sqlList.selectedItem = vo;				
+            	}
+            }
+            
+            private function insertBtn_click():void
+            {
+            	var isValidate:Boolean = true;
+            	if( vs.selectedChild == this.filterValueDate )
+            	{
+            		isValidate = this.filterValueDate.validateInputText();
+            	}else if( vs.selectedChild == this.filterValueTextInput )
+            	{
+            		isValidate = this.filterValueTextInput.validateTextInput();
+            	} 
+            	
+            	if( isValidate )
+            	{
+            		if(fieldList.selectedItem != null)
+	            	{
+	            	   	var vo:Criteria = getSqlVOFromUI();
+	            	   	sqlListDP.addItem(vo);
+	            	   	sqlList.selectedItem = vo;
+	            		setFirstOperator();
+	            	}
+            	}
+            	
+            }
+            
+            private function getSqlVOFromUI():Criteria
+            {
+            	 var sqlVO : Criteria = new Criteria();
+            		switch(vs.selectedIndex)
+            		{
+            			case 0:
+            				if(filterValueList.list.selectedIndex <0)
+            				{
+            					filterValueList.list.selectedIndex = 0;
+            				}
+            				sqlVO = filterValueList.getVO();
+            				sqlVO.field = fieldList.selectedItem as LiquidityDataField;            				
+            				sqlVO.operator = Criteria.AND;            				 
+            			break;
+            			case 1:
+            				sqlVO = filterValueDate.getVO();
+            				sqlVO.field = fieldList.selectedItem as LiquidityDataField;            				
+            				sqlVO.operator = Criteria.AND;  
+            			break;
+            			case 2:
+            				
+            				var arr:Array = filterValueText.getFilterValueTxt().split("\r");
+            				if(arr.length > 1)
+            				{
+            					var str:String ="";
+            					for(var i:int = 0;i<arr.length;i++)
+            					{
+            						str += "'"+arr[i].toString()+"'"+",";
+            					}
+            					str = str.substr(0,str.length-1);
+            					
+            					sqlVO.field = fieldList.selectedItem as LiquidityDataField;
+	            				sqlVO.condition = "IN";
+	            				sqlVO.fieldvalue = "("+str+")";
+	            				sqlVO.operator = Criteria.AND;  
+            				}
+            				else
+            				{
+            					sqlVO.field = fieldList.selectedItem as LiquidityDataField;
+	            				sqlVO.condition = "=";
+	            				sqlVO.fieldvalue = filterValueText.getFilterValueTxt();
+	            				sqlVO.operator = Criteria.AND;  
+            				}
+            			break;
+            			case 3:
+            				sqlVO = filterValueTextInput.getVO();
+            				sqlVO.field = fieldList.selectedItem as LiquidityDataField;   
+            				sqlVO.operator = Criteria.AND;  
+            			break;
+            			case 4:
+            				var arr:Array = filterValueGLC.getSelectedNode();
+            				var labelStr:String = arr[0].toString().substring(0,arr[0].toString().length -1);
+            				var valueStr:String = arr[1].toString().substring(0,arr[1].toString().length -1);
+            				
+            				sqlVO.field = fieldList.selectedItem as LiquidityDataField;
+            				sqlVO.condition = "IN";
+            				sqlVO.fieldvalue = "(" + valueStr + ")";
+            				sqlVO.operator = Criteria.AND;
+            			break;
+            		}
+            		return sqlVO;
+            }
+            
+            private function andBtn_click():void
+            {
+            	if(sqlList.selectedItem != null && sqlList.selectedIndex != 0)
+            	{            		
+            		var sqlVO : Criteria = sqlList.selectedItem as Criteria;
+            		sqlVO.operator = Criteria.AND;
+            		sqlListDP.refresh();
+            	}
+            }
+            
+            private function orBtn_click():void
+            {
+            	if(sqlList.selectedItem != null && sqlList.selectedIndex != 0)
+            	{            		
+            		var sqlVO : Criteria = sqlList.selectedItem as Criteria;
+            		sqlVO.operator = Criteria.OR;
+            		sqlListDP.refresh();
+            	}
+            }
+            
+            private function notBtn_click():void
+            {
+            	if(sqlList.selectedItem != null)
+            	{            		
+            		var sqlVO : Criteria = sqlList.selectedItem as Criteria;
+            		if(sqlVO.operator == Criteria.AND)
+            		{
+            			sqlVO.operator = Criteria.AND_NOT;
+            		}
+            		else if(sqlVO.operator == Criteria.OR)
+            		{
+            			sqlVO.operator = Criteria.OR_NOT;
+            		}
+            		
+//                    if(sqlVO.secondOperator == Criteria.NOT)
+//                    {
+//                        sqlVO.secondOperator = "";
+//                    }
+//                    else
+//                    {
+//                        sqlVO.secondOperator = Criteria.NOT;
+//                    }
+                    
+                    sqlListDP.refresh();
+            	}
+            }
+            
+            private function setLeftParenthesis() : void
+            {
+                if(sqlList.selectedItem != null)
+                {                   
+                    var sqlVO : Criteria = sqlList.selectedItem as Criteria;
+                    if(sqlVO.parenthesis == Criteria.LEFT_PARENTHESIS)
+                    {
+                        sqlVO.parenthesis = "";
+                    }
+                    else
+                    {
+                        sqlVO.parenthesis = Criteria.LEFT_PARENTHESIS;
+                    }
+                    sqlListDP.refresh();
+                }
+            }
+            
+            private function setRightParenthesis() : void
+            {
+                if(sqlList.selectedItem != null)
+                {                   
+                    var sqlVO : Criteria = sqlList.selectedItem as Criteria;
+                    if(sqlVO.parenthesis == Criteria.RIGHT_PARENTHESIS)
+                    {
+                        sqlVO.parenthesis = "";
+                    }
+                    else
+                    {
+                        sqlVO.parenthesis = Criteria.RIGHT_PARENTHESIS;
+                    }
+                    sqlListDP.refresh();
+                }
+            }
+            
+            private function removeBtn_click():void
+            {
+            	if(sqlList.selectedItem != null)
+            	{
+            		var index:int = sqlList.selectedIndex;            		
+            		sqlListDP.removeItemAt(index);
+            	}
+            }
+            
+            /////////////////////
+            [Bindable]
+            public function set sqlListDP(sqlListDP : ArrayCollection) : void
+            {
+                _sqlListDP = JupiterUtil.copyOverArray(sqlListDP);
+//                if(_sqlListDP)
+//                {
+//	                _sqlListDP.filterFunction = function(sqlVO : Criteria) : Boolean
+//	                {
+//	                    return sqlVO.isCondition;
+//	                };
+//	                _sqlListDP.refresh();
+//                }
+            }
+            
+            public function get sqlListDP() : ArrayCollection
+            {
+                return _sqlListDP
+            }
+             
+			private var _sqlListDP:ArrayCollection = new ArrayCollection();
+			public static var cmpDataProvider:ArrayCollection = new ArrayCollection();
+			private function up_click():void
+			{	
+				var curentIndex:int = sqlList.selectedIndex;
+				if( curentIndex <= 0)
+				{
+					return;
+				}
+				else
+				{
+				    var sqlVO1 : Criteria = sqlListDP.getItemAt(curentIndex) as Criteria;
+				    var sqlVO2 : Criteria = sqlListDP.getItemAt(curentIndex - 1) as Criteria;
+				    sqlListDP.setItemAt(sqlVO2, curentIndex);
+				    sqlListDP.setItemAt(sqlVO1, curentIndex - 1);
+				 	
+				 	setFirstOperator();
+					sqlList.selectedItem = sqlVO1;
+				} 
+			}
+			
+			private function down_click():void
+			{
+				var leg:int = sqlListDP.length;
+				var curentIndex:int = sqlList.selectedIndex;
+				if( curentIndex >= leg-1 || curentIndex < 0)
+				{
+					return;
+				}
+				else
+				{
+				    var sqlVO1 : Criteria = sqlListDP.getItemAt(curentIndex) as Criteria;
+				    var sqlVO2 : Criteria = sqlListDP.getItemAt(curentIndex + 1) as Criteria;
+				    sqlListDP.setItemAt(sqlVO1, curentIndex + 1);
+				    sqlListDP.setItemAt(sqlVO2, curentIndex);	
+				    
+				    setFirstOperator();				
+					sqlList.selectedItem = sqlVO1;
+				}
+			}
+			
+			private function setFirstOperator():void
+			{
+				var vo:Criteria = sqlListDP.getItemAt(0) as Criteria;
+				vo.operator = "AND";
+			}
+			
+			private function filterSettingConverse(vo:Criteria):void
+			{	
+				var fieldName:String ;
+				var operator:String ;
+				var value:String ;
+				
+				var arr:Array = vo.expression.split(" ");
+				if(arr.length == 3)
+				{
+					fieldName = arr[0];
+					operator = arr[1];
+					value = arr[2];
+					if(fieldName == "Amount")
+					value = operator +" "+arr[2];
+				}
+				else if(arr.length == 6)
+				{
+					fieldName = arr[0]+" "+ arr[1];
+					operator = arr[2];
+					value = arr[3] + arr[5];
+				}
+				else if(arr.length == 4)
+				{
+					fieldName = arr[0]+" "+ arr[1];
+					operator = arr[2];
+					value = operator + " "+arr[3];
+				}
+				else if(arr.length == 8)
+				{
+					fieldName = arr[0]+" "+ arr[1];
+					operator = arr[2];
+					value = operator + " "+ arr[5]+ " "+ arr[6]+" "+arr[7];
+				}
+				else if(arr.length == 14)
+				{
+					fieldName = arr[0]+" "+arr[1];
+					operator = arr[2];
+					value = vo.expression.substr(14,vo.expression.length-1);
+				}
+				
+				switch(operator)
+				{
+					case "=":
+						{
+							value = value.replace("'",""); 
+							value = value.replace("'",""); 
+						}
+					break;
+					case "IN":
+						{
+							value = value.replace("(",""); 
+							value = value.replace(")","");
+							for(var i:int = 0; i < value.length;i++)
+							{
+								if(value.search(",")>-1)
+								{
+									value = value.replace(",","\r");
+								}
+								if(value.search("'")>-1)
+								{
+									value = value.replace("'","");
+								}
+							}
+						}
+					break;
+					case "BETWEEN":
+						{
+							
+						}
+					break;
+				}
+				
+				if(arr[0] == "GLC1" || arr[0] == "GLC2" || arr[0] == "Cashflow Category")
+				{
+					fieldName = arr[0];
+					operator= arr[1];
+ 					value = vo.fieldvalue;
+				}	
+				
+				
+				for each( var field:LiquidityDataField in fieldListDP)
+				{
+					if(field.labelName == fieldName)
+					{
+						fieldList.selectedIndex = fieldListDP.getItemIndex(field);
+						break;
+					}
+				}
+				
+				field_change(value);
+
+				
+			}
+			
+			private function sqllist_change():void
+			{
+				if(sqlList.selectedItem != null)
+				{
+					filterSettingConverse(sqlList.selectedItem as Criteria);
+				}
+			}
+			
+			private function saveBtn_click():void
+			{
+				var i:int = 0;
+				for each (var vo:Criteria in sqlListDP)
+				{
+					if(vo.parenthesis == Criteria.LEFT_PARENTHESIS)
+					{
+						i = i+1;
+					}
+					else if(vo.parenthesis == Criteria.RIGHT_PARENTHESIS)
+					{
+						i = i -1;	
+					}
+					
+					if(i<0)
+					{
+						Alert.show("The left parenthesis and the right parenthesis does not match.");
+						return;
+					}
+				}
+				if(i != 0)
+				{
+					Alert.show("The left parenthesis and the right parenthesis does not match.");
+					return;
+				}
+				else
+				{
+					PopUpManager.removePopUp(this);
+					dispatchEvent(new Event(JupiterConstants.SQLLIST_SAVE));
+				}
+			}
+			
+			public function setRule(ruleId:Number):void
+            {            	
+            	for each(var rb:RadioButton in ruleHBox.getChildren())
+            	{
+            		if(rb.id == ruleId.toString())
+            		{
+            			RBGRule.selection = rb;
+            			break;
+            		}
+            	}
+            }
+			
+        ]]>
+    </mx:Script>    
+   
+     <!--<mx:ArrayCollection id="fieldListDP">
+	    <mx:Object label="Currency" field="S_Currency"/>
+	    <mx:Object label="Customer ID" field="S_CustomerID"/>
+	    <mx:Object label="Parent" field="S_Parent"/>
+	    <mx:Object label="Industry Code" field="S_InstitutionCode"/>
+	    <mx:Object label="Institution Code" field="S_IssuerInstitutionCode"/>
+	    <mx:Object label="Maturity Date" field="S_MaturityDate"/>
+	    <mx:Object label="Country" field="S_Country"/>
+	    <mx:Object label="GLC1" field="S_GLC1"/>
+	    <mx:Object label="GLC2" field="S_GLC2"/>
+	    <mx:Object label="GLC3" field="S_GLC3"/>
+	    <mx:Object label="GLC4" field="S_GLC4"/>
+	    <mx:Object label="Deal Ref" field="S_DealRef"/>
+	    <mx:Object label="Notional Amount" field="S_NotionalAmount"/>
+	    <mx:Object label="Amount" field="S_Amount"/>
+	    <mx:Object label="Cashflow Amount" field="S_CashFlowAmount"/>
+	 </mx:ArrayCollection>-->	
+   
+    <mx:VBox width="100%" height="505" verticalGap="0">
+        <mx:HBox width="100%" height="270">
+            <mx:VBox width="180">
+                <mx:Label text="Select a Field" fontWeight="bold"/>
+                <mx:List id="fieldList" width="180" height="242" labelField="labelName" change="field_change();" dataProvider="{fieldListDP}" selectedIndex="0" >
+                    
+                </mx:List>
+            </mx:VBox>
+            <mx:VBox width="100%" id="filterCriteriaConatiner"  height="270" horizontalGap="0">            	
+                <mx:Label text="Select Filter Criteria" fontWeight="bold"/>
+                <mx:ViewStack id="vs" width="100%" height="180">
+                	<scenariomanagement:FilterValueList id="filterValueList" width="100%" height="100%" itemDoubleClick="insertBtn_click();"/>
+                	<scenariomanagement:FilterValueDate id="filterValueDate" width="100%" height="100%" />
+                	<scenariomanagement:FilterValueText id="filterValueText" width="100%" height="100%" />
+                	<scenariomanagement:FilterValueTextInput id="filterValueTextInput" />
+                	<scenariomanagement:FilterValueGLC id="filterValueGLC" />
+                </mx:ViewStack>	
+                <mx:VBox width="100%" horizontalGap="0" >
+	            	<mx:HBox id="ruleHBox">
+	            		<mx:RadioButtonGroup id="RBGRule"/>
+                    	<!--<mx:RadioButton id="rb0" label="Include Records"  groupName="RBGRule" value="0"/>
+                    	<mx:RadioButton id="rb1" label="Exclude Records"  groupName="RBGRule" value="1"/>
+                    	<mx:RadioButton id="rb2" label="Copy Records"  groupName="RBGRule" value="2"/>
+                    	<mx:RadioButton id="rb3" label="Split Records"  groupName="RBGRule" value="3"/>-->
+	            	</mx:HBox>
+	            	<mx:HBox horizontalAlign="right" width="100%">
+	            		<mx:Button label="Insert" click="insertBtn_click();"/>
+	            		<mx:Button label="Update" click="updateBtn_click();"/>
+	            	</mx:HBox>
+            	</mx:VBox>
+				
+            </mx:VBox>
+        </mx:HBox>
+            <mx:VBox width="100%" height="220">
+                <mx:Label text="Filter Criteria" fontWeight="bold"/>
+                <scenariomanagement:SQLList width="100%" height="154" id="sqlList"  change="sqllist_change();" dataProvider="{sqlListDP}"/>
+                <mx:HBox width="100%">
+                    <mx:Button label="And" id="andBtn" click="andBtn_click();"/>
+                    <mx:Button label="Or" id="orBtn" click="orBtn_click();"/>
+                    <mx:Button label="Not" id="notBtn" click="notBtn_click();"/>
+                    <mx:Button label="Remove" id="removeBtn" click="removeBtn_click();"/>
+                    <mx:Button width="27" label="(" click="setLeftParenthesis()"/>
+                    <mx:Button width="27" label=")" click="setRightParenthesis()"/>
+                    <mx:Button width="27" toolTip="Up" icon="{ImagesResource.upCls}" click="up_click();"/>
+                    <mx:Button width="27" toolTip="Down" icon="{ImagesResource.downCls}" click="down_click();"/>
+                    <mx:Spacer width="100%"/>
+                    <mx:Button label="OK" id="saveBtn"  click="saveBtn_click()" icon="@Embed(source='/assets/images/save.png')" horizontalCenter="true"/>
+            		<mx:Button label="Close" click="PopUpManager.removePopUp(this)" icon="@Embed(source='/assets/images/close.png')" horizontalCenter="true"/>
+                </mx:HBox>
+            </mx:VBox>
+        </mx:VBox>
+</mx:TitleWindow>

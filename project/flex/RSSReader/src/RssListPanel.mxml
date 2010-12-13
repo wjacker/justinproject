@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import mx.core.Application;
+			import mx.managers.PopUpManager;
+			import event.RssChangeEvent;
+			import mx.collections.ArrayCollection;
+			
+			private var so : SharedObject = SharedObject.getLocal("myRssSource");
+			[Bindable]
+			public var rssAC : ArrayCollection;
+			
+			private function init() : void
+			{
+				flash.net.registerClassAlias("RssVO", RssVO);
+				
+				if(so.data.rssAC == null)
+				{
+					rssAC = new ArrayCollection();					
+				}
+				else
+				{
+					rssAC = so.data.rssAC;
+				}
+			}
+			
+			public function rssChanged() : void
+			{
+				var rss : RssVO = rssDG.selectedItem as RssVO;
+				dispatchEvent(new RssChangeEvent(rss));
+			}
+			
+			private function addRss() : void
+			{
+				var addOrEditRss : AddOrEditRss = AddOrEditRss(PopUpManager.createPopUp(Application.application as DisplayObject, AddOrEditRss, true));
+				addOrEditRss.rssVO = new RssVO();
+				addOrEditRss.type = "ADD";
+				addOrEditRss.addEventListener("addRss", function () : void
+				{
+					rssAC.addItem(addOrEditRss.rssVO);
+					PopUpManager.removePopUp(addOrEditRss);
+				});
+				
+				PopUpManager.centerPopUp(addOrEditRss);
+			}
+			
+			private function removeRss() : void
+			{
+				rssAC.removeItemAt(rssDG.selectedIndex);
+			}
+			
+			private function editRss() : void
+			{
+				var addOrEditRss : AddOrEditRss = AddOrEditRss(PopUpManager.createPopUp(Application.application as DisplayObject, AddOrEditRss, true));
+				addOrEditRss.rssVO = rssDG.selectedItem as RssVO;
+				addOrEditRss.type = "Edit";
+				addOrEditRss.addEventListener("updateRss", function () : void
+				{
+					rssAC[rssDG.selectedIndex] = addOrEditRss.rssVO;
+					PopUpManager.removePopUp(addOrEditRss);
+				});
+				PopUpManager.centerPopUp(addOrEditRss);
+			}
+			
+			private function saveRssList() : void
+			{
+				//flash.net.registerClassAlias("RssVO", RssVO);
+				so.data.rssAC = rssAC;
+				so.flush();
+			}
+		]]>
+	</mx:Script>
+
+	<mx:Metadata>
+		[Event(name="rssChanged", type="event.RssChangeEvent")]
+	</mx:Metadata>
+	
+	<mx:DataGrid id="rssDG" dataProvider="{rssAC}" change="rssChanged()" width="100%" height="100%">
+		<mx:columns>
+			<mx:DataGridColumn dataField="name"/>
+		</mx:columns>
+		<mx:filters>
+            <flash.filters:DropShadowFilter xmlns:flash.filters="flash.filters.*"
+                blurX="5"
+                blurY="5"
+                distance="3"
+                angle="45"
+                color="0x000000"
+                alpha="0.4"/>
+        </mx:filters>
+	</mx:DataGrid>
+	
+	<mx:HBox>
+		<mx:Button toolTip="Add RSS" click="addRss()" icon="@Embed(source='assets/add.png')"/>
+		<mx:Button toolTip="Edit RSS" click="editRss()" icon="@Embed(source='assets/edit.png')"/>
+		<mx:Button toolTip="Remove RSS" click="removeRss()" icon="@Embed(source='assets/delete.png')"/>
+		<mx:Button toolTip="Save RSS List" click="saveRssList()" icon="@Embed(source='assets/save.png')"/>
+	</mx:HBox>
+</mx:VBox>

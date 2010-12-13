@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+    width="100%"
+    creationComplete="init(event)"
+    height="100%">
+    <mx:Script>
+        <![CDATA[
+        	import mx.controls.Alert;
+        	import mx.collections.ArrayCollection;
+        	import mx.rpc.events.ResultEvent;
+        	import mx.events.FlexEvent;
+        	import mx.rpc.events.FaultEvent;
+            [Bindable]
+            public var url : String = ""; //url @kevin  http://www.ft.com/rss/home/uk
+            [Bindable]
+            public var rssDescription : String = "";
+            [Bindable]
+            public var dateField : String = "pubDate";
+            
+			private var netWorkStatus:String = "Offline";
+			private  var request:URLRequest;
+            private var requestLoader:URLLoader;
+            private function init(event : FlexEvent) : void
+            {            	
+            }
+            
+            public function updateRss(rssVO : RssVO) : void
+            {
+				url = rssVO.url;
+                RSSfeed.send();
+            }
+            
+            [Bindable]
+            private var dataSource:ArrayCollection;
+            
+            private function requestCompleteHandler(event:Event):void
+            {
+            	 roomsXML = XML(requestLoader.data);
+            }
+            
+            private function requestErrorHandler(event:IOErrorEvent):void
+			{
+			
+			}
+			private var msg:String = "The bank, partly owned by the UK government, reported a pro-forma loss of £4bn as the deteriorating state of its loan portfolio led it to take £13.4bn of impairment charges in the first half";
+            private function onResultHandler(event : ResultEvent) : void
+            {
+            	netWorkStatus = "Online";
+                try
+                {
+                	dateField = "pubDate";
+                    entries.selectedItem = RSSfeed.lastResult.rss.channel.item[0];
+                    body.htmlText = RSSfeed.lastResult.rss.channel.item[entries.selectedIndex].description;
+                    body.htmlText += "<br/><font color='#FF0000'><a href='" + RSSfeed.lastResult.rss.channel.item[entries.selectedIndex].link + "'>" + RSSfeed.lastResult.rss.channel.item[entries.selectedIndex].link + "</a></font>";
+                    rssDescription = RSSfeed.lastResult.rss.channel.description;                    
+                }
+                catch (err : Error)
+                {
+                    dateField = "date";
+                    entries.dataProvider = event.result.RDF.item as ArrayCollection;
+                    entries.selectedIndex = 0;
+                    body.htmlText = entries.dataProvider[0].description;
+                    body.htmlText += "<br/><font color='#FF0000'><a href='" + entries.dataProvider[0].link + "'>" + entries.dataProvider[0].link + "</a></font>";
+                }
+            }
+            
+            private function faultHandler(evt:FaultEvent):void
+            {
+            	Alert.show("This Rss load fault.", "Error");
+            }
+			[Bindable]
+			private var roomsXML:XML = new XML();
+			
+            private function itemClick(evt : Event) : void
+            {
+                try
+                {
+                    body.htmlText = RSSfeed.lastResult.rss.channel.item[entries.selectedIndex].description;
+                    body.htmlText += "<br/><font color='#FF0000'><a href='" + RSSfeed.lastResult.rss.channel.item[entries.selectedIndex].link + "'>" + RSSfeed.lastResult.rss.channel.item[entries.selectedIndex].link + "</a></font>";
+                }
+                catch (err : Error)
+                {
+                    body.htmlText = entries.dataProvider[entries.selectedIndex].description;
+                    body.htmlText += "<br/><font color='#FF0000'><a href='" + entries.dataProvider[entries.selectedIndex].link + "'>" + entries.dataProvider[entries.selectedIndex].link + "</a></font>";
+                }
+            }
+            
+            private function dateLabelFunction(item : Object, column : DataGridColumn) : String
+            {
+            	return item[column.dataField];
+            }
+        ]]>
+    </mx:Script>
+    <mx:HTTPService showBusyCursor="true"
+        id="RSSfeed"
+        requestTimeout="10"
+        result="onResultHandler(event)"
+        fault="faultHandler(event)"
+        useProxy="false"
+        url="{url}"
+        resultFormat="object"/>
+    <mx:VDividedBox width="100%" height="100%">
+    	<mx:DataGrid width="100%"
+	        height="60%"
+	        paddingTop="0"
+	        paddingBottom="0"
+	        id="entries"
+	        dataProvider="{RSSfeed.lastResult.rss.channel.item}"
+	        change="itemClick(event);">
+	        <mx:columns>
+	            <mx:DataGridColumn dataField="{dateField}" width="220"
+	                headerText="Date" labelFunction="dateLabelFunction"/>
+	            <mx:DataGridColumn dataField="title"
+	                headerText="Title"/>
+	        </mx:columns>
+	        <mx:filters>
+	            <flash.filters:DropShadowFilter xmlns:flash.filters="flash.filters.*"
+	                blurX="5"
+	                blurY="5"
+	                distance="3"
+	                angle="45"
+	                color="0x000000"
+	                alpha="0.4"/>
+	        </mx:filters>
+	    </mx:DataGrid>
+	    <mx:VBox width="100%" height="40%">
+	    	<mx:Label text="Post"
+		        width="100%"
+		        paddingTop="0"
+		        paddingBottom="0"
+		        fontWeight="bold"/>
+		    <mx:TextArea width="100%"
+		    	height="100%"
+		        paddingTop="0"
+		        id="body">
+		        <mx:filters>
+		            <flash.filters:DropShadowFilter xmlns:flash.filters="flash.filters.*"
+		                blurX="5"
+		                blurY="5"
+		                distance="3"
+		                angle="45"
+		                color="0x000000"
+		                alpha="0.4"/>
+		        </mx:filters>
+		    </mx:TextArea>
+	    </mx:VBox>
+    </mx:VDividedBox>
+</mx:VBox>

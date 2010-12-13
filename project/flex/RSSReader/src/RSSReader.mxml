@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="absolute" xmlns:local="*"
+	creationComplete="init()"
+	backgroundColor="#FFFFFF"
+	width="100%" height="100%"
+	status="   Author by Justin"
+	title="   RSS Reader v0.1"
+	titleTextStyleName="titleStyle">
+	<mx:Style>
+		Application
+		{
+			font-size:12;
+		}
+		.titleStyle
+		{
+			font-weight:bold;
+			color:#000000;
+		}
+	</mx:Style>
+	<mx:Script>
+		<![CDATA[
+			import event.RssChangeEvent;
+			public function init() : void
+			{
+				rssListPanel.addEventListener("rssChanged", rssChanged);
+			}
+			
+			private function rssChanged(e : RssChangeEvent) : void
+			{
+				rssFeedPanel.updateRss(e.rss);
+			}
+			
+            private function fontLoadComplete(evt:Event):void
+            {
+                try
+                {
+                    this.setStyle("fontFamily", "STSong");
+                }
+                catch (e:Error)
+                {
+                    trace(e.toString());
+                }
+            }			
+		]]>
+	</mx:Script>
+	
+	<mx:HDividedBox width="100%" height="100%"
+		paddingLeft="10" paddingRight="10"
+		paddingBottom="10" paddingTop="10">
+		<local:RssListPanel id="rssListPanel" width="200" height="100%"/>
+		<local:RssfeedPanel id="rssFeedPanel" width="100%" height="100%"/>
+	</mx:HDividedBox>
+	<!--<mx:SWFLoader x="-10" width="0" height="0" source="font.swf" creationComplete="fontLoadComplete(event)" visible="false"/>-->
+</mx:WindowedApplication>
