@@ -1,14 +1,21 @@
 package com.justin.project.server;
 
+
 import javax.jdo.PersistenceManager;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.justin.project.database.PMF;
 import com.justin.project.database.dao.Employee;
+import com.justin.project.database.dto.Pager;
+
 import java.util.List;
 import javax.jdo.Query;
 
 
 public class EmployeeService {
+	private static final Logger log = Logger.getLogger(EmployeeService.class.getName());
+
 	public List<Employee> getEmployeeList() {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		Query query = pm.newQuery(Employee.class);
@@ -19,6 +26,39 @@ public class EmployeeService {
 	    try {
 	        List<Employee> results = (List<Employee>) query.execute();
 	        return results;
+	    } finally {
+	        query.closeAll();
+	    }
+	}
+	
+	public List<Employee> getEmployeeListBy(Pager pager)
+	{
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		String queryStr = "select from com.justin.project.database.dao.Employee";
+		if(!pager.getSortField().isEmpty())
+		{
+			queryStr = queryStr.concat(" order by ").concat(pager.getSortField()).concat(" ").concat(pager.getSortType());
+		}
+
+		log.log(Level.SEVERE, "query string:" + queryStr);
+		 
+		Query query = pm.newQuery(queryStr);
+		query.setRange(pager.getRecFrom(), pager.getRecFrom() + pager.getPageSize());
+	    try {
+	        List<Employee> results = (List<Employee>) query.execute();
+	        return results;
+	    } finally {
+	        query.closeAll();
+	    }
+	}
+	
+	public int getPageCount()
+	{
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		Query query = pm.newQuery(Employee.class);
+	    try {
+	    	List<Employee> results = (List<Employee>) query.execute();
+	        return results.size();
 	    } finally {
 	        query.closeAll();
 	    }
