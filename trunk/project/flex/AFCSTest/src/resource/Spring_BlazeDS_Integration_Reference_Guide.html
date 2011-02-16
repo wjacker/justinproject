@@ -1,0 +1,1103 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Spring BlazeDS Integration Reference Guide</title><link rel="stylesheet" href="css/html.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.72.0"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" lang="en"><div class="titlepage"><div><div><h1 class="title"><a name="d0e1"></a>Spring BlazeDS Integration Reference Guide</h1></div><div><div xmlns:fo="http://www.w3.org/1999/XSL/Format" class="authorgroup"><h2>Authors</h2><p></p><span class="author"><span class="firstname">Jeremy</span> <span class="surname">Grelle</span></span></div></div><div><p class="releaseinfo">Version 1.5.0.M1</p></div><div><div class="legalnotice"><a name="d0e19"></a><p>
+				Copies of this document may be made for your own use and for
+				distribution to others, provided that you do not charge any
+				fee for such copies and further provided that each copy
+				contains this Copyright Notice, whether distributed in print
+				or electronically.
+			</p></div></div><div><p class="pubdate">June 2010</p></div></div><hr></div><div class="toc"><dl><dt><span class="chapter"><a href="#introduction">1. Spring BlazeDS Integration Overview</a></span></dt><dd><dl><dt><span class="sect1"><a href="#intro-background">1.1. Background</a></span></dt><dt><span class="sect1"><a href="#system-requirements">1.2. Minimum major dependency versions Spring BlazeDS Integration 1.5 requires to run</a></span></dt><dt><span class="sect1"><a href="#optional-system-requirements">1.3. Minimum major dependency versions required by optional features</a></span></dt><dt><span class="sect1"><a href="#support">1.4. Where to get support</a></span></dt></dl></dd><dt><span class="chapter"><a href="#configuration">2. Configuring and Using the BlazeDS MessageBroker with Spring</a></span></dt><dd><dl><dt><span class="sect1"><a href="#configuration-introduction">2.1. Introduction</a></span></dt><dt><span class="sect1"><a href="#configuration-dispatcherservlet">2.2. Configuring the Spring DispatcherServlet</a></span></dt><dt><span class="sect1"><a href="#configuration-messagebroker">2.3. Configuring the MessageBroker in Spring</a></span></dt><dt><span class="sect1"><a href="#configuration-mapping">2.4. Mapping Requests to the MessageBroker</a></span></dt><dt><span class="sect1"><a href="#flex-and-spring-mvc">2.5. Using Flex clients alongside Spring MVC Controllers</a></span></dt><dt><span class="sect1"><a href="#client-side-remoting">2.6. Using Spring-managed Destinations from the Flex Client</a></span></dt><dt><span class="sect1"><a href="#config-processors">2.7. Advanced MessageBroker Customization</a></span></dt><dt><span class="sect1"><a href="#exception-translators">2.8. Using Custom Exception Translators</a></span></dt><dt><span class="sect1"><a href="#message-interceptors">2.9. Using Custom Message Interceptors</a></span></dt><dd><dl><dt><span class="sect2"><a href="#resource-handling-message-interceptors">2.9.1. </a></span></dt></dl></dd><dt><span class="sect1"><a href="#service-adapters">2.10. Providing Custom Service Adapters</a></span></dt></dl></dd><dt><span class="chapter"><a href="#remoting">3. Exporting Spring Beans for Flex Remoting</a></span></dt><dd><dl><dt><span class="sect1"><a href="#remoting-introduction">3.1. Introduction</a></span></dt><dt><span class="sect1"><a href="#remoting-service-config">3.2. Configuring the Remoting Service</a></span></dt><dt><span class="sect1"><a href="#remoting-destination">3.3. Using the <code class="code">remoting-destination</code> Tag</a></span></dt><dt><span class="sect1"><a href="#remoting-destination-annotation">3.4. Exporting Beans for Remoting with @RemotingDestination</a></span></dt></dl></dd><dt><span class="chapter"><a href="#hibernate">4. Working with Hibernate</a></span></dt><dd><dl><dt><span class="sect1"><a href="#hibernate-introduction">4.1. Introduction</a></span></dt><dd><dl><dt><span class="sect2"><a href="#hibernate-io-config">4.1.1. Configuring Hibernate Entity Serialization/Deserialization Support</a></span></dt><dt><span class="sect2"><a href="#hibernate-io-custom-converters">4.1.2. Providing Custom Converters for Hibernate Entity Serialization/Deserialization</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#security">5. Securing BlazeDS Destinations with Spring Security</a></span></dt><dd><dl><dt><span class="sect1"><a href="#security-introduction">5.1. Introduction</a></span></dt><dd><dl><dt><span class="sect2"><a href="#spring-security-config">5.1.1. A simple Spring Security 3 configuration</a></span></dt><dt><span class="sect2"><a href="#security-filter-config">5.1.2. Enabling the Spring Security filter chain in web.xml</a></span></dt></dl></dd><dt><span class="sect1"><a href="#configuring-security">5.2. Configuring the Spring Security Integration</a></span></dt><dd><dl><dt><span class="sect2"><a href="#accessing-user-details">5.2.1. Accessing User Details</a></span></dt><dt><span class="sect2"><a href="#security-exception-translation">5.2.2. Security Exception Translation</a></span></dt><dt><span class="sect2"><a href="#secured-tag-attributes">5.2.3. <code class="code">secured</code> Configuration Attributes</a></span></dt></dl></dd><dt><span class="sect1"><a href="#endpoint-security">5.3. Configuring Endpoint and Destination Security</a></span></dt><dd><dl><dt><span class="sect2"><a href="#secured-channel">5.3.1. Securing Specific BlazeDS Channels</a></span></dt><dt><span class="sect2"><a href="#secured-endpoint-path">5.3.2. Securing BlazeDS Channels by Endpoint URL Path</a></span></dt><dt><span class="sect2"><a href="#securing-destinations">5.3.3. Securing Exported Spring Services</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#messaging">6. Integration with the BlazeDS Message Service</a></span></dt><dd><dl><dt><span class="sect1"><a href="#messaging-introduction">6.1. Introduction</a></span></dt><dt><span class="sect1"><a href="#message-service-config">6.2. Configuring the Message Service</a></span></dt><dt><span class="sect1"><a href="#actionscript-messaging">6.3. Using AMF Message Destinations</a></span></dt><dt><span class="sect1"><a href="#jms-messaging">6.4. Using JMS Message Destinations</a></span></dt><dt><span class="sect1"><a href="#integration-messaging">6.5. Using Spring Integration Message Destinations</a></span></dt><dt><span class="sect1"><a href="#message-template">6.6. Sending AMF Messages with the MessageTemplate</a></span></dt></dl></dd><dt><span class="chapter"><a href="#samples">7. Building and Running the Spring BlazeDS Integration Samples</a></span></dt><dd><dl><dt><span class="sect1"><a href="#samples-introduction">7.1. Introduction</a></span></dt><dd><dl><dt><span class="sect2"><a href="#building-with-maven">7.1.1. Maven Setup</a></span></dt><dt><span class="sect2"><a href="#samples-build">7.1.2. Building the Test Drive</a></span></dt><dt><span class="sect2"><a href="#blazeds-4-maven">7.1.3. Using BlazeDS 4 with Maven</a></span></dt><dt><span class="sect2"><a href="#pre-built-samples">7.1.4. Download the Pre-packaged Test Drive</a></span></dt><dt><span class="sect2"><a href="#samples-eclipse">7.1.5. Importing and Running the Test Drive in Eclipse</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#flexaddon">8. Working with the Flex Addon for Spring Roo</a></span></dt><dd><dl><dt><span class="sect1"><a href="#flexaddon-introduction">8.1. Introduction</a></span></dt><dd><dl><dt><span class="sect2"><a href="#flex-addon-requirements">8.1.1. Minimum Requirements for the Flex Addon for Spring Roo</a></span></dt><dt><span class="sect2"><a href="#flex-addon-setup">8.1.2. Installing the Flex Addon for Spring Roo</a></span></dt><dt><span class="sect2"><a href="#flex-addon-features">8.1.3. Flex Addon for Spring Roo Features</a></span></dt><dt><span class="sect2"><a href="#flex-addon-commands">8.1.4. Flex Commands</a></span></dt><dd><dl><dt><span class="sect3"><a href="#flex-setup-command">8.1.4.1. flex setup</a></span></dt><dt><span class="sect3"><a href="#flex-remoting-scaffold-command">8.1.4.2. flex remoting scaffold</a></span></dt><dt><span class="sect3"><a href="#flex-remoting-all-command">8.1.4.3. flex remoting all</a></span></dt></dl></dd><dt><span class="sect2"><a href="#running-flex-addon-project">8.1.5. Building and Running a Flex Addon Project</a></span></dt><dd><dl><dt><span class="sect3"><a href="#building-with-maven">8.1.5.1. Building and Running a Flex Addon Project with Maven</a></span></dt><dt><span class="sect3"><a href="#building-with-sts">8.1.5.2. Importing a Flex Addon Project into SpringSource Tool Suite and Flash Builder</a></span></dt></dl></dd><dt><span class="sect2"><a href="#sample-script">8.1.6. Running the Sample Roo Script</a></span></dt><dt><span class="sect2"><a href="#known-issues">8.1.7. Known Issues</a></span></dt></dl></dd></dl></dd></dl></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="introduction"></a>Chapter&nbsp;1.&nbsp;Spring BlazeDS Integration Overview</h2></div></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="intro-background"></a>1.1.&nbsp;Background</h2></div></div></div><p>
+			Spring has always aimed to be agnostic to the client technologies being used to access its core services, intentionally leaving options open and letting
+			the community drive the demand for any new first-class integration solutions to be added to the Spring project portfolio.  Spring BlazeDS Integration
+			is an answer to the commmunity demand for a top-level solution for building Spring-powered Rich Internet Applications using Adobe Flex for the client-side 
+			technology.         
+		</p><p>
+			<a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://opensource.adobe.com/wiki/display/blazeds/BlazeDS/" target="_top">BlazeDS</a> is an open source project from Adobe that provides the remoting and 
+			messaging foundation for connecting a Flex-based front-end to Java back-end services.  Though it has previously been possible to use BlazeDS to connect to 
+			Spring-managed services, it has not been in a way that feels "natural" to a Spring developer, requiring the extra burden of having to maintain a separate 
+			BlazeDS xml configuration.  Spring BlazeDS Integration turns the tables by making the BlazeDS MessageBroker a Spring-managed object, opening up the pathways
+			to a more extensive integration that follows "the Spring way".   
+		</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="system-requirements"></a>1.2.&nbsp;Minimum major dependency versions Spring BlazeDS Integration 1.5 requires to run</h2></div></div></div><p>
+			Java 5
+		</p><p>
+			Spring 3.0
+		</p><p>
+			Adobe BlazeDS 4.0
+		</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="optional-system-requirements"></a>1.3.&nbsp;Minimum major dependency versions required by optional features</h2></div></div></div><p>
+			Spring Security 3.0
+		</p><p>
+			Spring Integration 1.0
+		</p><p>
+			Hibernate 3.5
+		</p><p>
+			Spring Roo 1.1M1
+		</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="support"></a>1.4.&nbsp;Where to get support</h2></div></div></div><p>
+			Professional from-the-source support on Spring BlazeDS Integration is available from
+			<a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://www.springsource.com" target="_top">SpringSource</a>, the company behind Spring.
+		</p></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="configuration"></a>Chapter&nbsp;2.&nbsp;Configuring and Using the BlazeDS MessageBroker with Spring</h2></div></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="configuration-introduction"></a>2.1.&nbsp;Introduction</h2></div></div></div><p>
+        	The central component that must be configured to use Spring BlazeDS Integration is the <code class="code">MessageBroker</code>.  HTTP messages from the Flex client
+        	will be routed through the Spring <code class="code">DispatcherServlet</code> to the Spring-managed <code class="code">MessageBroker</code>.  There is no need to configure the 
+        	BlazeDS <code class="code">MessageBrokerServlet</code> when using the Spring-managed <code class="code">MessageBroker</code>.
+        </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="configuration-dispatcherservlet"></a>2.2.&nbsp;Configuring the Spring DispatcherServlet</h2></div></div></div><p>
+    		The <code class="code">DispatcherServlet</code> must be configured as normal in web.xml to bootstrap a Spring WebApplicationContext. For example:
+    	</p><pre class="programlisting">
+&lt;!-- The front controller of this Spring Web application, responsible for handling all application requests --&gt;
+&lt;servlet&gt;
+    &lt;servlet-name&gt;Spring MVC Dispatcher Servlet&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+        &lt;param-value&gt;/WEB-INF/config/web-application-config.xml&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+		</pre></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="configuration-messagebroker"></a>2.3.&nbsp;Configuring the MessageBroker in Spring</h2></div></div></div><p>
+    		A simplified Spring XML config namespace is provided for configuring the MessageBroker in your WebApplicationContext. To use the 
+    		namespace support you must add the schema location in your Spring XML config files.  A typical config will look something like
+    		the following:
+    	</p><pre class="programlisting">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:flex="http://www.springframework.org/schema/flex"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/flex 
+           http://www.springframework.org/schema/flex/spring-flex-1.0.xsd"&gt;
+...
+&lt;/beans&gt;
+    		
+    	</pre><p>
+    		This makes the Spring BlazeDS Integration configuration tags available under the <code class="code">flex</code> namespace in your configuration files.  The above setup will
+    		be assumed for the rest of the configuration examples to follow.  For the full detail of every attribute and tag available in the config namespace, be sure
+    		to refer to the spring-flex-1.0.xsd as every element and attribute is fully documented there.  Using an XSD-aware XML editor such as the one in Eclipse
+    		should bring up the documentation automatically as you type.
+    	</p><p>
+    		At a minimum, the <code class="code">MessageBrokerFactoryBean</code> must be configured as a bean in your Spring WebApplicationContext in order to bootstrap the <code class="code">MessageBroker</code>,
+    		along with a <code class="code">MessageBrokerHandlerAdapter</code> and an appropriate <code class="code">HandlerMapping</code> (usually a <code class="code">SimpleUrlHandlerMapping</code>) to route incoming
+    		requests to the Spring-managed <code class="code">MessageBroker</code>.
+    	</p><p> 
+    		These beans will be registered automatically by using the provided <code class="code">message-broker</code> tag in your bean
+    		definition file.  For example, in its simplest form:
+    	</p><pre class="programlisting">
+&lt;flex:message-broker/&gt;    	
+    	</pre><p>
+    		This will set up the <code class="code">MessageBroker</code> and necessary supporting infrastructure using sensible defaults.  The defaults can be
+    		overriden using the provided attributes of the <code class="code">message-broker</code> tag and its associated child elements.  For example, the
+    		default location of the BlazeDS XML configuration file (/WEB-INF/flex/services-config.xml) can be overridden using the 
+    		<code class="code">services-config-path</code> attribute.  The <code class="code">MessageBrokerFactoryBean</code> uses Spring's <code class="code">ResourceLoader</code> abstraction,
+    		so that typical Spring resource paths may be used.  For example, to load the configuration from the application's classpath: 
+    	</p><pre class="programlisting">
+&lt;flex:message-broker services-config-path="classpath*:services-config.xml"    	
+    	</pre><p>
+    		The equivalent <code class="code">MessageBrokerFactoryBean</code> definition using vanilla Spring configuration would be:
+    	</p><pre class="programlisting">
+&lt;!-- Bootstraps and exposes the BlazeDS MessageBroker --&gt;
+&lt;bean id="_messageBroker" class="org.springframework.flex.core.MessageBrokerFactoryBean" &gt;
+	&lt;property name="servicesConfigPath" value="classpath*:services-config.xml" /&gt;
+&lt;/bean&gt;    	
+    	</pre><p>
+    		Note especially that with the <code class="code">message-broker</code> tag, it is not necessary to assign a custom id to the MessageBroker, and it
+    		is in fact discouraged so that you won't have to continually reference it later.  The only reason you would ever need to provide a custom
+    		id is if you were bootstrapping more than one <code class="code">MessageBroker</code> in the same WebApplicationContext.
+    	</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="configuration-mapping"></a>2.4.&nbsp;Mapping Requests to the MessageBroker</h2></div></div></div><p>To properly route incoming requests to the Spring-managed <code class="code">MessageBroker</code>, request mapping must be configured in three places:</p><div class="orderedlist"><ol type="1"><li><p><code class="code">DispatcherServlet</code> mapping in web.xml</p></li><li><p><code class="code">HandlerMapping</code> in the Spring WebApplicationContext</p></li><li><p>Channel definitions in the BlazeDS services-config.xml</p></li></ol></div><p>
+    		The simplest request mapping scenario is when the Flex front-end is the only client type for the application.  In this case you can just map /messagebroker as the top-level
+    		path for requests.  The mapping in web.xml would be:
+    	</p><pre class="programlisting">
+&lt;!-- Map all /messagbroker requests to the DispatcherServlet for handling --&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;Spring MVC Dispatcher Servlet&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/messagebroker/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;    
+		</pre><p> 
+    		When using the <code class="code">message-broker</code> config tag, a <code class="code">SimpleUrlHandlerMapping</code> is installed that by default maps all 
+    		incoming <code class="code">DispatcherServlet</code> requests to the Spring-managed <code class="code">MessageBroker</code> using a <code class="code">/*</code>path pattern.  
+    		The default mapping can be overridden by providing one or more <code class="code">mapping</code> child elements.  If you want to provide your own
+    		<code class="code">HandlerMapping</code> bean configuration, you can disable the default using the <code class="code">disable-default-mapping</code> attribute 
+    		of the <code class="code">message-broker</code> tag.  The order of the installed <code class="code">SimpleUrlHandlerMapping</code> can be set (for complex 
+    		scenarios where multiple handler mapping types are installed in the same context) using the <code class="code">mapping-order</code> attribute.
+    	</p><p>
+			The <code class="code">SimpleUrlHandlerMapping</code> in the Spring WebApplicationContext maps all requests to the Spring-managed <code class="code">MessageBroker</code> via 
+			the <code class="code">MessageBrokerHandlerAdapter</code>.  The default setup installed by the <code class="code">message-broker</code> config tag is equivalent to the
+			following bean definitions:
+		</p><pre class="programlisting">
+&lt;!-- Maps request paths at /* to the BlazeDS MessageBroker --&gt;
+&lt;bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping"&gt;
+    &lt;property name="mappings"&gt;
+        &lt;value&gt;
+            /*=_messageBroker
+        &lt;/value&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;!-- Dispatches requests mapped to a MessageBroker --&gt;
+&lt;bean class="org.springframework.flex.servlet.MessageBrokerHandlerAdapter"/&gt;    
+		</pre><p>
+			Channel definitions in the BlazeDS services-config.xml must correspond to the chosen mapping.  For example, to set up a typical AMF channel in 
+			BlazeDS that matches the above mapping strategy:
+		</p><pre class="programlisting">
+&lt;channel-definition id="my-amf" class="mx.messaging.channels.AMFChannel"&gt;
+    &lt;endpoint url="http://{server.name}:{server.port}/{context.root}/messagebroker/amf" 
+    	class="flex.messaging.endpoints.AMFEndpoint"/&gt;
+    &lt;properties&gt;
+        &lt;polling-enabled&gt;false&lt;/polling-enabled&gt;
+    &lt;/properties&gt;
+&lt;/channel-definition&gt; 		
+		</pre><p>
+			See the <a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://livedocs.adobe.com/blazeds/1/blazeds_devguide/" target="_top">BlazeDS documentation</a> for more information on configuring communication 
+			channels in services-config.xml.
+		</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="flex-and-spring-mvc"></a>2.5.&nbsp;Using Flex clients alongside Spring MVC Controllers</h2></div></div></div><p>
+			It could often be the case that your application needs to serve more than just Flex-based clients.  For example, you may be constructing a RESTful architecture
+			that is meant to serve multiple client-types.  You could potentially even be consuming RESTful endpoints using the Flex HTTPService component.  Spring MVC's controller 
+			model provides a simple, flexible means to create such RESTful endpoints. In these sorts of hybrid web application secenarios, 
+			you will need to consider an alternate mapping strategy.  
+		</p><p>
+			The simplest approach is to use a hierarchical application context with multiple <code class="code">DispatcherServlets</code>.  In this approach, you configure
+			your main application layer (services, security, supporting infrastructure, etc) in a parent context loaded via the <code class="code">ContextLoaderListener</code>, and then
+			configure all aspects of your Spring MVC controllers in one child <code class="code">DispatcherServlet</code> context, and all aspects specific to your Flex client in a separate 
+			child <code class="code">DispatcherServlet</code> context.  This approach could look as follows in web.xml:     
+		</p><pre class="programlisting">
+&lt;context-param&gt;
+    &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+    &lt;param-value&gt;
+        /WEB-INF/spring/*-context.xml
+    &lt;/param-value&gt;
+&lt;/context-param&gt;
+
+&lt;listener&gt;
+    &lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;
+&lt;/listener&gt;
+
+&lt;servlet&gt;
+    &lt;servlet-name&gt;flex&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+    &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;flex&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/messagebroker/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+
+&lt;servlet&gt;
+    &lt;servlet-name&gt;spring-mvc&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+    &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;spring-mvc&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/spring/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt; 		
+		</pre><p>
+			Here the parent application context is being assembled from a group of files ending in <code class="code">-context.xml</code> contained in the <code class="code">/WEB-INF/spring/</code> directory.  The child 
+			context for the Flex-specific setup would be built (by convention) from <code class="code">/WEB-INF/flex-servlet.xml</code>, and the context for the Spring MVC controllers would be built from <code class="code">/WEB-INF/spring-mvc-servlet.xml</code>.  
+			This approach provides a nice separation of concerns and will allow Spring 2.5+ annotated controllers to work using their default configuration.
+		</p><p>
+			An alternate approach is to keep things consolidated under one <code class="code">DispatcherServlet</code> context.  The down-side to this approach is that it requires some additional manual configuration, and you 
+			have to modify your mapping approach accordingly, such as mapping <code class="code">/spring/*</code> to the <code class="code">DispatcherServlet</code>, mapping <code class="code">/messagebroker/*</code>
+			to the Spring-managed <code class="code">MessageBroker</code> via the <code class="code">mapping</code> XML namespace config tag, and modifying any BlazeDS channel definitions accordingly.  You would override the default mapping strategy
+			of the <code class="code">message-broker</code> tag as follows:
+		</p><pre class="programlisting">
+&lt;flex:message-broker&gt;
+    &lt;flex:mapping pattern="/messagebroker/*" /&gt;
+&lt;/flex:message-broker&gt; 		
+		</pre><p>
+			and you would have to account for the /spring/* mapping in your BlazeDS channel definitions.  For example:
+		</p><pre class="programlisting">
+&lt;channel-definition id="my-amf" class="mx.messaging.channels.AMFChannel"&gt;
+    &lt;endpoint url="http://{server.name}:{server.port}/{context.root}/spring/messagebroker/amf" 
+    	class="flex.messaging.endpoints.AMFEndpoint"/&gt;
+    &lt;properties&gt;
+        &lt;polling-enabled&gt;false&lt;/polling-enabled&gt;
+    &lt;/properties&gt;
+&lt;/channel-definition&gt; 		
+		</pre><p>
+			In addition to setting up the consolidated mapping strategy, you will also have to manually enable the correct <code class="code">HandlerMapping</code> and <code class="code">HandlerAdapter</code> for your Spring MVC controllers 
+			<a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://static.springframework.org/spring/docs/2.5.x/reference/mvc.html#mvc-ann-setup" target="_top">as described in the Spring MVC documentation</a>, due to the fact that alternate <code class="code">HandlerMapping</code> and 
+			<code class="code">HandlerAdapter</code> beans are configured automatically when using the <code class="code">message-broker</code> tag.
+		</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="client-side-remoting"></a>2.6.&nbsp;Using Spring-managed Destinations from the Flex Client</h2></div></div></div><p>
+    		Explicit channel definition is a requirement when using dynamic destinations (meaning any destination that is added programmatically and not defined in the BlazeDS 
+    		services-config.xml, i.e. the destinations created by the <code class="code">remoting-destination</code> tag and the various <code class="code">*-message-destination</code> tags).  See 
+    		<a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://livedocs.adobe.com/blazeds/1/blazeds_devguide/runtimeconfig_5.html#194376" target="_top">Adobe's documentation</a> for more detail.
+    	</p><p>
+			The only way you don't have to explicitly define the ChannelSet on the client is if
+		</p><div class="orderedlist"><ol type="1"><li><p>you are using explicitly defined destinations in services-config.xml (i.e, not dynamic destinations) AND you compile your flex client against that file</p></li><li><p>your destination is using the application-wide default channel AND you compile your flex client against that file</p></li></ol></div><p>
+			Even if you weren't using dynamically created destinations it is debatable whether it is a good idea to ever compile your client against services-config.xml, 
+			thus coupling your client to your server configuration. It is often desirable to keep your flex client and your server side code as two distinct modules, 
+			but compiling against services-config.xml blurs the lines between those modules.
+		</p><p>
+			Our recommendation is that it is generally cleaner to keep the client-side configuration of ChannelSets explicitly contained within the client module. 
+			An excellent way to do this without having to hard-code the URLs in your client code is to use an ActionScript DI framework such as Spring 
+			ActionScript (a Spring Extensions project, formerly known as Prana).
+		</p><p>
+			If you choose to go the route of compiling your client against services-config.xml, note that you can at least keep the URL information out of the 
+			client code by using ServerConfig.getChannel as described in the referenced BlazeDS documentation.
+    	</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="config-processors"></a>2.7.&nbsp;Advanced MessageBroker Customization</h2></div></div></div><p>
+    		The initialization of the <code class="code">MessageBroker</code> by the <code class="code">MessageBrokerFactoryBean</code> logically consists of two phases:
+    	</p><div class="orderedlist"><ol type="1"><li><p>Parsing the BlazeDS XML configuration files and applying their settings to a newly created MessageBroker</p></li><li><p>Starting the MessageBroker and its services</p></li></ol></div><p>
+    		A special <code class="code">MessageBrokerConfigProcessor</code> callback interface is provided that allows custom processing to be done on the
+    		newly created MessageBroker after each phase, before it is made available for request processing.  This interface is used internally
+    		by Spring BlazeDS Integration, but is also available for general use in advanced programmatic introspection and customization of the 
+    		<code class="code">MessageBroker</code>.  A custom <code class="code">MessageBrokerConfigProcessor</code> can be configured as a Spring bean and then registered with the 
+    		<code class="code">MessageBrokerFactoryBean</code> via the <code class="code">config-processor</code> tag.  For example, given a trivial implementation
+    		to log some additional info about the MessageBroker:   		
+    	</p><pre class="programlisting">
+package com.example;
+
+import org.springframework.flex.config.MessageBrokerConfigProcessor;
+
+import flex.messaging.MessageBroker;
+import flex.messaging.services.RemotingService;
+
+public class MyDestinationCountingConfigProcessor implements MessageBrokerConfigProcessor {
+
+	public MessageBroker processAfterStartup(MessageBroker broker) {
+		RemotingService remotingService = 
+			(RemotingService) broker.getServiceByType(RemotingService.class.getName());
+		if (remotingService.isStarted()) {
+			System.out.println("The Remoting Service has been started with "
+					+remotingService.getDestinations().size()+" Destinations.");
+		}
+		return broker;
+	}
+
+	public MessageBroker processBeforeStartup(MessageBroker broker) {
+		return broker;
+	}
+} 		
+		</pre><p>
+			This class could be configured and registered with the <code class="code">MessageBroker</code> as follows:
+		</p><pre class="programlisting">
+&lt;flex:message-broker&gt;
+	&lt;flex:config-processor ref="myConfigProcessor" /&gt;
+&lt;/flex:message-broker&gt;
+
+&lt;bean id="myConfigProcessor" class="com.example.MyDestinationCountingConfigProcessor" /&gt;
+		</pre></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="exception-translators"></a>2.8.&nbsp;Using Custom Exception Translators</h2></div></div></div><p>
+    		In order to propagate useful information back to the Flex client when an exception occurs on the server, 
+    		the original exception must be translated into an instance of <code class="code">flex.messaging.MessageException</code>.
+    		If special translation logic is not applied, a generic "Server.Processing" error will propagate to the client that
+    		doesn't give the client the chance to reason on the real cause of the error to take appropriate action.  Special 
+    		exception translators are configured by default for transforming Spring Security exceptions into an appropriate 
+    		<code class="code">MessageException</code>, but it could also be useful to provide custom translation for your own application-level exceptions.    
+    	</p><p>
+    		Custom exception translation logic can be provided through implementations of the <code class="code">org.springframework.flex.core.ExceptionTranslator</code>
+    		interface.  These implementations must be configured as Spring beans and then registered through the XML configuration namespace as follows:  
+    	</p><pre class="programlisting">
+&lt;!-- Custom exception translator configured as a Spring bean --&gt;
+&lt;bean id="myExceptionTranslator" class="com.foo.app.MyBusinessExceptionTranslator"/&gt;
+
+&lt;flex:message-broker&gt;
+	&lt;flex:exception-translator ref="myExceptionTranslator"/&gt;
+&lt;/flex:message-broker&gt;    		
+    	</pre></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="message-interceptors"></a>2.9.&nbsp;Using Custom Message Interceptors</h2></div></div></div><p>
+			Custom message interceptors may be used to apply special processing logic to incoming and outgoing AMF messages in 
+			their de-serialized Java form.  For example, an interceptor can be used to inspect the contents of the incoming message,
+			or to add extra information to the outgoing message.    
+		</p><p>
+			Custom message processing logic is provided through implementations of the <code class="code">org.springframework.flex.core.MessageInterceptor</code> 
+			interface.  These implementations must be configured as Spring beans and then registered through the XML configuration namespace as follows:  
+		</p><pre class="programlisting">
+&lt;!-- Custom message interceptor configured as a Spring bean --&gt;
+&lt;bean id="myMessageInterceptor" class="com.foo.app.MyMessageInterceptor"/&gt;
+
+&lt;flex:message-broker&gt;
+	&lt;flex:message-interceptor ref="myMessageInterceptor"/&gt;
+&lt;/flex:message-broker&gt;    		
+    	</pre><div class="sect2" lang="en"><div class="titlepage"></div><p>
+    	       As of release 1.0.2 of Spring BlazeDS Integration, an additional <code class="code">org.springframework.flex.core.ResourceHandlingMessageInterceptor</code> interface
+    	       is available to use.  Interceptors that implement this extended interface receive an additional guaranteed callback after message processing is completed,
+    	       whether processing was successful or failed due to an exception being thrown by the Endpoint.  This allows the interceptor to clean up any resources that 
+    	       it may have been using.  This interface extends the basic <code class="code">MessageInterceptor</code> interface, thus it is configured the same way using the 
+    	       <code class="code">message-interceptor</code> tag.
+    	   </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="service-adapters"></a>2.10.&nbsp;Providing Custom Service Adapters</h2></div></div></div><p>
+			Using the XML config namespace automatically installs the needed implementations of <code class="code">flex.messaging.services.ServiceAdapter</code>
+			for use with the Remoting and Message services.  Third-party adapters (such as those provided by the dpHibernate or Gilead projects) can
+			be configured using the <code class="code">org.springframework.flex.core.ManageableComponentFactoryBean</code>.  This factory bean implementation is
+			able to process arbitrarily complex configuration metadata supplied in JSON format (instead of arbitrarily complex XML as in the native
+			BlazeDS configuration) and honors the lifecycle semantics (such as proper invocation of the <code class="code">initialize</code> method) of the 
+			ManageableComponent.  These custom adapters may be used by Spring-managed Remoting and Message destinations by either setting its id as the 
+			default for the Remoting or Message service, or by setting the <code class="code">service-adapter</code> attribute for a specific destination (see the 
+			Remoting and Messaging chapters for further detail).
+		</p><p>
+			For example, to use the special adapter provided by dpHibernate as the default adapter with the Remoting service, the configuration 
+			would be similar to the following:      
+		</p><pre class="programlisting">
+&lt;bean id="hibernate-object" class="org.springframework.flex.core.ManageableComponentFactoryBean"&gt;
+&lt;constructor-arg value="net.digitalprimates.persistence.hibernate.HibernateAdapter"/&gt;
+    &lt;property name="properties"&gt;
+        &lt;value&gt;
+            {"hibernate" :
+                {"sessionFactory" :
+                    { "class" : "net.digitalprimates.persistence.hibernate.utils.HibernateUtil",
+                      "getCurrentSessionMethod" : "getCurrentSession"
+                    }
+                }
+            }
+        &lt;/value&gt;
+    &lt;/property&gt;
+&lt;/bean&gt; 
+
+&lt;flex:message-broker&gt;
+	&lt;flex:remoting-service default-adapter-id="hibernate-object" /&gt;
+&lt;/flex:message-broker&gt;    		
+    	</pre></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="remoting"></a>Chapter&nbsp;3.&nbsp;Exporting Spring Beans for Flex Remoting</h2></div></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="remoting-introduction"></a>3.1.&nbsp;Introduction</h2></div></div></div><p>
+        	Using a Spring-managed <code class="code">MessageBroker</code> enables Spring beans to be easily exported for direct remoting calls from a Flex client.  This approach
+        	is quite similar to that taken with other remoting technologies in the core Spring Framework.  Remoting is applied to existing Spring-managed beans
+        	as an external configuration concern.  The <code class="code">MessageBroker</code> transparently handles the process of serialization and deserialization between
+        	the Flex AMF data format and Java. 
+        </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="remoting-service-config"></a>3.2.&nbsp;Configuring the Remoting Service</h2></div></div></div><p>
+    		The BlazeDS <code class="code">RemotingService</code> has traditionally been configured by the inclusion of a remoting-config.xml file in the BlazeDS XML configuration.  When
+    		using only Spring-managed remoting destinations, this config file can be left out completely as the inclusion of the <code class="code">message-broker</code> tag
+    		in your Spring configuration will cause the <code class="code">RemotingService</code> to be configured with sensible defaults if none already exists at startup
+    		time.  The end result is essentially equivalent to including the following minimal remoting-config.xml in your BlazeDS configuration:
+    	</p><pre class="programlisting">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;service id="remoting-service"
+    class="flex.messaging.services.RemotingService"&gt;
+
+    &lt;adapters&gt;
+        &lt;adapter-definition id="java-object" 
+            class="flex.messaging.services.remoting.adapters.JavaAdapter" 
+            default="true"/&gt;
+    &lt;/adapters&gt;
+
+    &lt;default-channels&gt;
+        &lt;channel ref="my-amf"/&gt;
+    &lt;/default-channels&gt;
+    
+&lt;/service&gt;    	
+    	</pre><p>
+    		Note that this assumes that there is already an equivalent application-wide <code class="code">default-channels</code> configuration.  It is recommended that
+    		you set the desired service-specific channels (see example below) if not relying on an application-wide default setup.  If no application-wide
+    		defaults exist, a best guess will be made by configuring the first available channel from the <code class="code">MessageBroker</code> that uses an 
+    		<code class="code">AMFEndpoint</code> as the default for the <code class="code">RemotingService</code>.  
+    	</p><p>
+    		If you wish to have more explicit control over the defaults that will be set on the <code class="code">RemotingService</code>, you can customize them
+    		via the <code class="code">remoting-service</code> child element of the <code class="code">message-broker</code> tag.  For example:
+    	</p><pre class="programlisting">
+&lt;flex:message-broker&gt;
+	&lt;flex:remoting-service default-adapter-id="my-default-remoting-adapter" 
+	    default-channels="my-amf, my-secure-amf" /&gt;
+&lt;/flex:message-broker&gt;
+		</pre><p>
+    		If you have an existing remoting-config.xml for a legacy BlazeDS application, the <code class="code">RemotingDestinationExporter</code> will be able to work transparently with it,
+    		allowing you to gradually migrate to all Spring-managed remoting destinations.
+    	</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="remoting-destination"></a>3.3.&nbsp;Using the <code class="code">remoting-destination</code> Tag</h2></div></div></div><p>
+    		The <code class="code">remoting-destination</code> configuration tag can be used to export existing Spring-managed services for direct remoting from a Flex client.
+    		Given the following Spring bean definition for a <code class="code">productService</code> bean:
+    	</p><pre class="programlisting">    
+&lt;bean id="productService" class="flex.samples.product.ProductServiceImpl" /&gt;
+    	</pre><p>
+    		and assuming the existance of a Spring-managed <code class="code">MessageBroker</code> configured via the <code class="code">message-broker</code> tag, the following 
+    		top-level <code class="code">remoting-destination</code> tag will expose the service for remoting to the Flex client as a remote service destination named <code class="code">productService</code>: 
+    	</p><pre class="programlisting">
+&lt;!-- Expose the productService bean for BlazeDS remoting --&gt;
+&lt;flex:remoting-destination ref="productService" /&gt;
+    	</pre><p>
+    		By default, the remote service destination exposed to the Flex client will use bean name of the bean being exported as the service id of the 
+    		destination, but this may be overridden using the <code class="code">destination-id</code> attribute on the <code class="code">remoting-destination</code> tag.
+    	</p><p>
+    		An alternate way of using the <code class="code">remoting-destination</code> tag is as a child element of an top-level bean definition.  This is even more concise 
+    		and works well if you don't have a need to keep your domain-layer bean definitions separate from infrastructure concerns such as Flex remoting.  
+    		(Keep in mind that keeping them separate can lead to easier testability of the core domain layer.)  The following achieves the equivalent result
+    		to the previous example:  
+    	</p><pre class="programlisting">    
+&lt;bean id="productService" class="flex.samples.product.ProductServiceImpl" &gt;
+	&lt;flex:remoting-destination /&gt;
+&lt;/bean&gt;
+    	</pre><p>
+    		The methods that are exposed to be called by the Flex client can be more tightly controlled through use of the <code class="code">include-methods</code> and <code class="code">exclude-methods</code>
+    		attributes of the <code class="code">remoting-destination</code> tag.  The BlazeDS channels over which the destination is exposed can also be controlled using the <code class="code">channels</code> 
+    		attribute.  (These attributes are available whether using the top-level or the nested version.)  A more extensively customized example would look something like:
+    	</p><pre class="programlisting">
+&lt;flex:remoting-destination ref="productService" 
+    include-methods="read, update" 
+    exclude-methods="create, delete" 
+    channels="my-amf, my-secure-amf" /&gt;
+    	</pre><p>
+    		The <code class="code">remoting-destination</code> tag is transparently configuring a <code class="code">RemotingDestinationExporter</code> bean instance for each bean being exported.  
+    		The equivalent full bean syntax without the namespace support would be:
+    	</p><pre class="programlisting">
+&lt;!-- Expose the productService bean for BlazeDS remoting --&gt;
+&lt;bean id="product" class="org.springframework.flex.remoting.RemotingDestinationExporter"&gt;
+    &lt;property name="messageBroker" ref="_messageBroker"/&gt;
+    &lt;property name="service" ref="productService"/&gt;
+    &lt;property name="destinationId" value="productService"/&gt;
+    &lt;property name="includeMethods" value="read, update"/&gt;
+    &lt;property name="excludeMethods" value="create, delete"/&gt;
+    &lt;property name="channels" value="my-amf, my-secure-amf"/&gt;
+&lt;/bean&gt;
+		</pre></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="remoting-destination-annotation"></a>3.4.&nbsp;Exporting Beans for Remoting with @RemotingDestination</h2></div></div></div><p>
+    		The <code class="code">@RemotingDestination</code> annotation may be used as an alternative to the XML remoting-destination tag when using annotation-based 
+    		Spring configuration.  <code class="code">@RemotingDestination</code> is used at the type level to indicate the class being exported.  <code class="code">@RemotingInclude</code> and 
+    		<code class="code">@RemotingExclude</code> are used at the method level to mark the methods that should be included and excluded for remoting.  
+    	</p><p>
+    		The following example illustrates the productService bean configured exclusively through annotations:
+    	</p><pre class="programlisting">
+package flex.samples.product;
+
+import org.springframework.flex.remoting.RemotingDestination;
+import org.springframework.flex.remoting.RemotingExclude;
+import org.springframework.flex.remoting.RemotingInclude;
+import org.springframework.stereotype.Service;
+
+@Service("productService")
+@RemotingDestination(channels={"my-amf","my-secure-amf"})
+public class ProductServiceImpl implements ProductService {
+
+	@RemotingInclude
+	public Product read(String id) {
+		...
+	}
+	
+	@RemotingExclude
+	public Product create(Product product){
+		...
+	}
+	
+	@RemotingInclude
+	public Product update(Product product){
+		...
+	}
+	
+	@RemotingExclude
+	public void delete(Product product) {
+		...
+	}
+}
+    	</pre></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="hibernate"></a>Chapter&nbsp;4.&nbsp;Working with Hibernate</h2></div></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="hibernate-introduction"></a>4.1.&nbsp;Introduction</h2></div></div></div><p>
+        	Using Hibernate to handle persistence concerns is quite common in Spring applications.  A common problem arises, though, when attempting to 
+        	directly use Hibernate-loaded entities in AMF messages with BlazeDS.  In essence, the default BlazeDS serialization mechanism tries to walk 
+        	the entire object graph, forcing initialization of any lazily loaded associations that might be encountered.  This generally leads either to 
+        	LazyInitialization errors, or (if using a solution such as Spring's <code class="code">OpenSessionInViewFilter</code>) the undesirable n+1 selects 
+        	scenario.  The other problem that arises is when associations are eagerly loaded, but still wrapped in a Hibernate-specific collection or proxy, 
+        	which can cause unexpected results in the way the association gets serialized.   
+        </p><p>
+        	Spring BlazeDS Integration 1.5+ provides a simple solution that will allow the direct use of Hibernate entities in AMF messages.  A special Spring-aware 
+        	<code class="code">PropertyProxy</code> (a BlazeDS-specific interface for customizing serialization) is automatically installed that delegates to the Spring 3.0 
+        	<code class="code">ConversionService</code> to allow for additional property conversion logic to be plugged in during the serialization/deserialization process.
+        </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="hibernate-io-config"></a>4.1.1.&nbsp;Configuring Hibernate Entity Serialization/Deserialization Support</h3></div></div></div><p>
+	     		The Hibernate serialization/deserialization support will be automatically configured with a default <code class="code">ConversionService</code> upon application 
+	     		startup if Hibernate is detected on the classpath.  This support is provided in the form of two different <code class="code">MessageBrokerConfigProcessors</code> - 
+	     		one for "native" Hibernate and one for using Hibernate as a JPA provider.  The proper one will be configured based on the presence of the JPA api on 
+	     		the classpath.   
+	     	</p><p>
+	     		The default behavior of the <code class="code">ConversionService</code> (in the case of both "native" Hibernate and JPA), is as follows:
+	     	</p><div class="orderedlist"><ol type="1"><li><p>Check each property to see whether it is contains a Hibernate-specific Proxy or Collection</p></li><li><p>If the Proxy/Collection is initialized, unwrap the underlying value for serialization</p></li><li><p>If the Proxy/Collection is uninitialized, return <code class="code">null</code> for the value to be serialized</p></li></ol></div><p>
+    			The default behavior may be extended/overridden by manually deploying either the <code class="code">HibernateConfigProcessor</code> or 
+    			<code class="code">JpaHibernateConfigProcessor</code> as a Spring bean and wiring it into the <code class="code">MessageBroker</code> via the <code class="code">config-processor</code> XML
+    			namespace tag.  For example, assuming you have a custom <code class="code">ConversionService</code> provided as a bean named "myCustomConversionService", and you 
+    			are using JPA, you would configure the <code class="code">JpaHibernateConfigProcessor</code> as follows:
+    		</p><pre class="programlisting">
+&lt;flex:message-broker&gt;
+	&lt;flex:config-processor ref="myJpaConfigProcessor" /&gt;
+&lt;/flex:message-broker&gt;
+
+&lt;bean id="myJpaConfigProcessor" class="org.springframework.flex.core.io.JpaConfigProcessor"&gt;
+	&lt;property name="conversionService" ref="myConversionService" /&gt;
+&lt;/bean&gt;
+		</pre></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="hibernate-io-custom-converters"></a>4.1.2.&nbsp;Providing Custom Converters for Hibernate Entity Serialization/Deserialization</h3></div></div></div><p>
+    			Customizing the way Hibernate entities are converted to/from AMF is a matter of writing your own Spring 3 <code class="code">Converter</code>s and 
+    			configuring a <code class="code">ConversionService</code> that uses them.
+    		</p><p>TODO - Provide examples of custom converters to further control the serialization/deserialization process.</p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="security"></a>Chapter&nbsp;5.&nbsp;Securing BlazeDS Destinations with Spring Security</h2></div></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="security-introduction"></a>5.1.&nbsp;Introduction</h2></div></div></div><p>
+        	Spring Security provides an extremely flexible alternative to the container-based security support provided out-of-the-box with 
+        	BlazeDS.  Spring BlazeDS Integration provides explicit integration support for incorporating Spring Security smoothly into your 
+        	Flex/BlazeDS application.  Spring Security provides a wealth of different configuration options, but rather than go into the many
+        	different combinations here, we'll leave most of that to the Spring Security documentation.  
+        </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="spring-security-config"></a>5.1.1.&nbsp;A simple Spring Security 3 configuration</h3></div></div></div><p>
+	        	Here is a simple Spring Security starting configuration for use in conjunction with the explicit integration features 
+	        	provided by Spring BlazeDS Integration that should be a solid starting point for securing a typical Flex application:   
+	        </p><pre class="programlisting">
+&lt;beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd"&gt;
+
+    &lt;http entry-point-ref="entryPoint"&gt;
+        &lt;anonymous enabled="false"/&gt;
+    &lt;/http&gt;
+    
+    &lt;beans:bean id="entryPoint" class="org.springframework.security.web.authentication.Http403ForbiddenEntryPoint"/&gt;
+    
+    &lt;authentication-manager&gt;
+       &lt;authentication-provider&gt;
+           &lt;user-service&gt;
+            &lt;user name="john" password="john" authorities="ROLE_USER" /&gt;
+            &lt;user name="admin" password="admin" authorities="ROLE_USER, ROLE_ADMIN" /&gt;
+            &lt;user name="guest" password="guest" authorities="ROLE_GUEST" /&gt;
+           &lt;/user-service&gt;
+       &lt;/authentication-provider&gt;
+    &lt;/authentication-manager&gt;
+
+&lt;/beans:beans&gt;
+        </pre><p>
+				With a typical Flex application, this approach is preferred to using Spring Security's auto-config setup.  Auto-config sets up a number of 
+				features that typically are not needed with a Flex application.  For instance, auto-config sets up a default <code class="code">intercept-url</code> entry that
+				requires authentication for all URL paths within the application.  This does not work well for the needs of a typical BlazeDS setup as it would result in
+				the server returning a 403 response code for un-authenticated calls to BlazeDS endpoints which the Flex client does not handle gracefully.  (See <a href="#secured-endpoint-path" title="5.3.2.&nbsp;Securing BlazeDS Channels by Endpoint URL Path">
+				Securing BlazeDS Channels by Endpoint URL Path</a> for an alternative to <code class="code">intercept-url</code> that generates proper AMF responses for the Flex client.) 
+				It is recommended to start simple as in this example, and add the additional features as needed.  
+			</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="security-filter-config"></a>5.1.2.&nbsp;Enabling the Spring Security filter chain in web.xml</h3></div></div></div><p>
+		        For a typical setup with Spring Security, it is critical to remember to enable 
+		        the Spring Security filter chain by adding the appropriate entry to web.xml:
+		    </p><pre class="programlisting">
+&lt;filter&gt; 
+    &lt;filter-name&gt;springSecurityFilterChain&lt;/filter-name&gt; 
+    &lt;filter-class&gt;org.springframework.web.filter.DelegatingFilterProxy&lt;/filter-class&gt; 
+&lt;/filter&gt; 
+
+&lt;filter-mapping&gt; 
+    &lt;filter-name&gt;springSecurityFilterChain&lt;/filter-name&gt; 
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt; 
+&lt;/filter-mapping&gt; 		    
+
+            </pre></div><p>
+        	We will assume the above configuration is in place for the remainder of the examples in this chapter.  For additional details on the many options available in 
+        	configuring and using Spring Security, please refer to that project's <a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://static.springsource.org/spring-security/site/reference.html" target="_top">documentation</a>.
+        </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="configuring-security"></a>5.2.&nbsp;Configuring the Spring Security Integration</h2></div></div></div><p>
+    		Spring Security integration is enabled through the <code class="code">secured</code> child element of the <code class="code">message-broker</code> tag.  The
+    		simplest possible configuration would be:
+    	</p><pre class="programlisting">
+&lt;flex:message-broker&gt;
+	&lt;flex:secured /&gt;
+&lt;/flex:message-broker&gt;
+    	</pre><p>
+    		This enables the basic security features.  A special BlazeDS <code class="code">LoginCommand</code> implementation is automatically installed that
+    		enables ChannelSet.login and ChannelSet.logout requests to integrate with Spring Security's Authorization mechanisms.  Additionally, 
+    		the special <code class="code">LoginCommand</code> enables Spring Security granted authorities to be referenced in BlazeDS XML security constraints.
+    		For example, if we were using a traditional BlazeDS remoting destination defined in remoting-config.xml, we could have something like 
+    		the following:  
+    	</p><pre class="programlisting">
+&lt;destination id="productService"&gt;
+    ...
+    &lt;security&gt;
+        &lt;security-constraint&gt;
+            &lt;auth-method&gt;Custom&lt;/auth-method&gt;
+            &lt;roles&gt;
+                &lt;role&gt;ROLE_USER&lt;/role&gt;
+            &lt;/roles&gt;
+        &lt;/security-constraint&gt;
+    &lt;/security&gt;
+&lt;/destination&gt;    	
+    	</pre><p>
+    		As you can see, we are referencing the "ROLE_USER" authority from our simple Spring Security setup.  The invocation of this remote
+    		destination would cause the provided <code class="code">LoginCommand</code> to be invoked to both verify that the user is logged in and to check
+    		that they have the appropriate role.  Violation of either will result in an exception being thrown by Spring Security.    
+    	</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="accessing-user-details"></a>5.2.1.&nbsp;Accessing User Details</h3></div></div></div><p>
+    			When using the ChannelSet.login API call from the Flex client with Spring Security integration enabled, the resulting ResponseEvent 
+    			fired client-side upon successful completion will contain additional information that can be inspected about the current user.  The 
+    			name and authorities will be extracted from the Authentication object and added to the body of the response message.  This information, 
+    			for example, can then be used to conditionally display different portions of the UI based on the user's identity and granted roles:
+    		</p><pre class="programlisting">
+var token:AsyncToken = myChannelSet.login("jeremy","atlanta");
+token.addResponder(
+	new AsyncResponder(
+  		function(event:ResultEvent, token:Object = null):void {
+  			if (event.result.authorities.indexOf("ROLE_ADMIN") &gt;= 0) {
+  				displayAdminPanel(event.result.name);
+  			} else {
+  				displayUserPanel(event.result.name);
+  			}
+  		},
+  		function(event:FaultEvent, token:Object = null):void {
+  			displayErrorMessage("Login Failed: "+event.fault.faultString);
+  		}
+  	)
+);    	
+    		</pre></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="security-exception-translation"></a>5.2.2.&nbsp;Security Exception Translation</h3></div></div></div><p>
+	    		Another feature that is automatically installed when the <code class="code">secured</code> tag is used is automatic exception translation from
+	    		any thrown SpringSecurityException to the proper BlazeDS SecurityException.  The exceptions are caught and translated at the proper 
+	    		point in the execution chain such that it will result in the proper AMF error message being serialized and sent back to the client.
+	    	</p><p>  
+	    		This is alternative to the normal Spring Security behavior where a filter in the chain catches the exception and sends back a
+	    		corresponding HTTP status code.  The problem with sending back HTTP status codes other than 200 is that this causes the Flex client
+	    		to throw a generic and rather unhelpful exception, and often the status code can't be determined from the Flex client.  Sending back 
+	    		specific AMF error messages instead causes a <code class="code">FaultEvent</code> to be thrown client-side that contains the proper 
+	    		security fault code that can then be reasoned on and appropriate action can be taken.  This behavior is equivalent to that of the
+	    		out-of-the-box container-based security mechanisms provided with BlazeDS, so the programming model client-side remains the same.
+	    	</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="secured-tag-attributes"></a>5.2.3.&nbsp;<code class="code">secured</code> Configuration Attributes</h3></div></div></div><p>
+	    		The <code class="code">secured</code> tag has several additional attributes that allow further customization.
+	    	</p><p>	
+	    		If you are not using Spring Security's
+	    		default bean ids for the <code class="code">AuthenticationManager</code> or <code class="code">AccessDecisionManager</code>, you can specify your custom bean references
+	    		using the corresponding <code class="code">authentication-manager</code> and <code class="code">access-decision-manager</code> attributes respectively on the <code class="code">secured</code>
+	    		tag.   
+	    	</p><p>
+	    		The configuration of the provided <code class="code">LoginCommand</code> can be further controlled via the <code class="code">secured</code> tag.  The <code class="code">invalidate-flex-session</code>
+	    		attribute controls whether the current Flex session is invalidated when the <code class="code">logout()</code> method is called on the <code class="code">LoginCommand</code>, and 
+	    		defaults to "true" if not specified.  The <code class="code">per-client-authentication</code> attribute turns BlazeDS's per-client authentication mode on when true, and
+	    		defaults to "false" if not specified.  Enabling per-client authentication will cause the Security context to no longer be stored in the session between
+	    		requests and thus will prevent the use of any Spring Security filters that rely on the Security Context being available in the session, but the authentication 
+	    		and authorization integration will otherwise work as expected.  (See the BlazeDS docs for further information on the difference between per-session and per-client 
+	    		authentication.)  	    		
+	    	</p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="endpoint-security"></a>5.3.&nbsp;Configuring Endpoint and Destination Security</h2></div></div></div><p>
+    		The Spring Security integration allows flexible control over how you secure your application.  You can secure BlazeDS endpoints in
+    		a manner similar to Spring Security's traditional URL security, and you can secure your Spring services using the many existing
+    		object security mechanisms of Spring Security just as if you were writing a traditional web application.
+    	</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="secured-channel"></a>5.3.1.&nbsp;Securing Specific BlazeDS Channels</h3></div></div></div><p>
+    			You can set security constraints on specific BlazeDS channels using the <code class="code">secured-channel</code> child element of the <code class="code">secured</code> 
+    			tag.  For example:  
+    		</p><pre class="programlisting">
+&lt;flex:message-broker&gt;
+	&lt;flex:secured&gt;
+		&lt;flex:secured-channel channel="my-amf" access="ROLE_USER" /&gt;
+	&lt;/flex:secured&gt;
+&lt;/flex:message-broker&gt;
+    		</pre><p>
+    			This results in any request being routed to the "my-amf" channel to require the user to be logged in and to have the "ROLE_USER" 
+    			authority.  If either of those is violated, a <code class="code">FaultEvent</code> will be signaled on the client. 
+    		</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="secured-endpoint-path"></a>5.3.2.&nbsp;Securing BlazeDS Channels by Endpoint URL Path</h3></div></div></div><p>
+    			You can set security constraints on multiple BlazeDS channels at once using the <code class="code">secured-endpoint-path</code> child element 
+    			of the <code class="code">secured</code> tag.  In this case you specify a URL pattern to be secured instead of a specific channel id.  For 
+    			example:  
+    		</p><pre class="programlisting">
+&lt;flex:message-broker&gt;
+	&lt;flex:secured&gt;
+		&lt;flex:secured-endpoint-path pattern="**/messagebroker/**" access="ROLE_USER" /&gt;
+	&lt;/flex:secured&gt;
+&lt;/flex:message-broker&gt;
+    		</pre><p>
+    			This results in any request being routed to any channel whose endpoint URL contains "/messagebroker/" in the path to require the 
+    			user to be logged in and to have the "ROLE_USER" authority.  If either of those is violated, a <code class="code">FaultEvent</code> will be 
+    			signaled on the client. 
+    		</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="securing-destinations"></a>5.3.3.&nbsp;Securing Exported Spring Services</h3></div></div></div><p>
+    			Earlier in this chapter you saw an example of using the BlazeDS XML configuration to secure a BlazeDS-managed destination.  Since
+    			most of the time you will instead be defining destinations by exporting Spring beans using the <code class="code">remoting-destination</code>tag, an
+    			alternate approach to securing destinations is needed.  This is where Spring Security comes in, as all of its existing authorization
+    			mechanisms should "just work" when security integration is enabled using the <code class="code">secured</code> tag.   
+    		</p><p>
+    			One of the major strengths of Spring Security is the multiple levels of granularity it provides you when securing your Spring services.  You can
+    			go from securing your entire service layer in one concise statement:
+    		</p><pre class="programlisting">
+&lt;global-method-security&gt;
+    &lt;protect-pointcut expression="execution(* com.mycompany.*Service.*(..))" access="ROLE_USER"/&gt;
+&lt;/global-method-security&gt;
+    		</pre><p>
+    			to controlling access in a more fine-grained manner at the method layer using XML:
+    		</p><pre class="programlisting">
+&lt;bean id="myService" class="com.mycompany.myapp.MyService"&gt;
+	&lt;flex:remoting-destination/&gt;
+    &lt;security:intercept-methods&gt;
+        &lt;security:protect method="set*" access="ROLE_ADMIN" /&gt;
+        &lt;security:protect method="get*" access="ROLE_ADMIN,ROLE_USER" /&gt;
+        &lt;security:protect method="doSomething" access="ROLE_USER" /&gt;
+    &lt;/security:intercept-methods&gt;
+&lt;/bean&gt;
+    		</pre><p>
+    			to using a combination of XML and annotations:
+    		</p><pre class="programlisting">
+&lt;security:global-method-security secured-annotations="enabled" jsr250-annotations="enabled"/&gt;
+...
+&lt;flex:remoting-destination ref="myBankServiceImpl" /&gt;
+  
+
+    		</pre><pre class="programlisting">
+public interface BankService {
+  
+    @Secured("IS_AUTHENTICATED_ANONYMOUSLY")
+    public Account readAccount(Long id);
+  
+    @Secured("IS_AUTHENTICATED_ANONYMOUSLY")
+    public Account[] findAccounts();
+  
+    @Secured("ROLE_TELLER")
+    public Account post(Account account, double amount);
+}
+
+    		</pre><p>
+    			to even more fine-grained ACL-based domain object permissions.  For more details on the options available, see the Spring Security
+    			documentation.
+    		</p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="messaging"></a>Chapter&nbsp;6.&nbsp;Integration with the BlazeDS Message Service</h2></div></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="messaging-introduction"></a>6.1.&nbsp;Introduction</h2></div></div></div><p>
+        	The BlazeDS <code class="code">MessageService</code> provides a common abstraction for asynchronous messaging style communication
+        	that is ultimately agnostic to the messaging protocol being used on the server side.  Messages can be passed 
+        	exclusively between Flex clients, from Java POJOs to subscribed Flex clients, from Flex clients to POJO message
+        	handlers, or between just about any combination thereof. Using the Spring-managed <code class="code">MessageBroker</code> enables support for using 
+        	BlazeDS-native AMF messaging, JMS messaging based on Spring's proven and simple JMS abstractions, 
+        	or messaging using Spring Integration's <code class="code">MessageChannel</code> abstraction, all from a common programming model.    
+        </p><p>
+        	The same <code class="code">Consumer</code> and <code class="code">Producer</code> APIs are used to interact with message destinations from the Flex client, regardless 
+        	of which underlying messaging protocol is being used on the server.  As such, this chapter will focus mainly on setting up and using the various
+        	message destination types on the server side.  For more details on how to use the <code class="code">Consumer</code> and <code class="code">Producer</code> APIs in the client,
+        	see the BlazeDS documentation.    
+        </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="message-service-config"></a>6.2.&nbsp;Configuring the Message Service</h2></div></div></div><p>
+    		The BlazeDS <code class="code">MessageService</code> has traditionally been configured by the inclusion of a messaging-config.xml file in the BlazeDS XML configuration.  
+    		When using only Spring-managed message destinations, this config file can be left out completely as the inclusion of the <code class="code">message-broker</code> tag
+    		in your Spring configuration will cause the <code class="code">MessageService</code> to be configured with sensible defaults if none already exists at startup
+    		time.  The end result is essentially equivalent to including the following minimal messaging-config.xml in your BlazeDS configuration:
+    	</p><pre class="programlisting">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;service id="remoting-service"
+    class="flex.messaging.services.MessageService"&gt;
+
+    &lt;adapters&gt;
+        &lt;adapter-definition id="actionscript" 
+        	class="flex.messaging.services.messaging.adapters.ActionScriptAdapter" 
+        	default="true"/&gt;
+    &lt;/adapters&gt;
+
+    &lt;default-channels&gt;
+        &lt;channel ref="my-polling-amf"/&gt;
+    &lt;/default-channels&gt;
+    
+&lt;/service&gt;    	
+    	</pre><p>
+    		Note that this assumes that there is already an equivalent application-wide <code class="code">default-channels</code> configuration.  It is recommended that
+    		you set the desired service-specific channels (see example below) if not relying on an application-wide default setup.  If no application-wide
+    		defaults exist, a best guess will be made by configuring the first available channel from the <code class="code">MessageBroker</code> that uses an 
+    		<code class="code">AMFEndpoint</code> with polling enabled as the default for the <code class="code">MessageService</code>.  
+    	</p><p>
+    		If you wish to have more explicit control over the defaults that will be set on the <code class="code">MessageService</code>, you can customize them
+    		via the <code class="code">message-service</code> child element of the <code class="code">message-broker</code> tag.  For example:
+    	</p><pre class="programlisting">
+&lt;flex:message-broker&gt;
+	&lt;flex:message-service default-adapter-id="my-default-messaging-adapter" 
+		default-channels="my-polling-amf" /&gt;
+&lt;/flex:message-broker&gt;
+		</pre><p>
+    		If you have an existing messaging-config.xml for a legacy BlazeDS application, the <code class="code">MessageDestinationFactory</code> will be able to work transparently 
+    		with it, allowing you to gradually migrate to all Spring-managed messaging destinations.
+    	</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="actionscript-messaging"></a>6.3.&nbsp;Using AMF Message Destinations</h2></div></div></div><p>
+    		For simple messaging needs where there are no requirements for message durability, transaction support, or advanced routing logic, the BlazeDS-native 
+    		AMF-based message destination is the ideal choice.  These destinations can be fully configured in a Spring application context using the 
+    		<code class="code">message-destination</code> XML namespace tag.  For example, assuming a Spring-managed <code class="code">MessageBroker</code> has been configured, all that is
+    		needed to set up a basic destination named "event-bus" with default settings is the following:  
+    	</p><pre class="programlisting">
+&lt;flex:message-destination id="event-bus" /&gt;    	
+    	</pre><p>
+    		This sets up a destination to use the BlazeDS <code class="code">ActionScriptAdapter</code> to handle incoming messages.  The settings of the destination can be
+    		further customized through the various attributes of the <code class="code">message-destination</code> tag.  Here is an example of the "event-bus" destination configured 
+    		with most of the available attributes:    
+    	</p><pre class="programlisting">
+&lt;flex:message-destination id="event-bus" 
+	message-broker="messageServiceBroker"
+	channels="my-polling-amf, my-secure-amf" 
+	allow-subtopics="true" 
+	cluster-message-routing="broadcast" 
+	message-time-to-live="1" 
+	send-security-constraint="fooConstraint" 
+	subscribe-security-constraint="barConstraint" 
+	subscription-timeout-minutes="1" 
+	subtopic-separator="/" 
+	throttle-inbound-max-frequency="500"
+	throttle-inbound-policy="ERROR" 
+	throttle-outbound-max-frequency="500" 
+	throttle-outbound-policy="IGNORE" /&gt;    	
+    	</pre><p>
+    		The <code class="code">message-broker</code> attribute is a reference to the id of a Spring-managed <code class="code">MessageBroker</code>.  The <code class="code">channels</code> attribute allows
+    		you to specify a comma-delimited list of the BlazeDS channels to be used (in order of preference) for this destination.  The remaining attributes correspond
+    		to the options available via the <code class="code">network</code> and <code class="code">server</code> settings when configuring a message destination in the BlazeDS-specific XML.  
+    		Each of these additional attributes is documented in the XSD to provide live code-completion assistance.  For additional details on their usage, see
+    		the BlazeDS documentation.  The <code class="code">message-destination</code> tag serves as a base for the <code class="code">jms-message-destination</code> and 
+    		<code class="code">integration-message-destination</code> tags so that the same configuration options are available no matter the type of the underlying 
+    		<code class="code">MessagingAdapter</code>.
+    	</p><p> 
+    		The only attribute available on the <code class="code">message-destination</code> tag that is not available in the JMS and Spring Integration implementations is the 
+    		<code class="code">service-adapter</code> attribute, which can be used to provide a custom <code class="code">ServiceAdapter</code> via a reference to a 
+    		<code class="code">ManageableComponentFactoryBean</code>.  This can be used to provide integration with additional messaging protocols not directly supported by
+    		Spring BlazeDS Integration.  See <a href="#service-adapters" title="2.10.&nbsp;Providing Custom Service Adapters">Providing Custom Service Adapters</a> for additional information on using the
+    		<code class="code">ManageableComponentFactoryBean</code>.  
+    	</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="jms-messaging"></a>6.4.&nbsp;Using JMS Message Destinations</h2></div></div></div><p>
+    		For integration with JMS, a special <code class="code">JmsAdapter</code> is provided that internally makes use of Spring's <code class="code">JmsTemplate</code>, <code class="code">DestinationResolver</code>, 
+    		<code class="code">DefaultMessageListenerContainer</code> and other such JMS abstractions for simplified interaction with JMS resources.  The <code class="code">jms-message-destination</code> XML namespace 
+    		tag is used to expose JMS destinations as BlazeDS message destinations.  The minimal attributes that must be specified are the destination <code class="code">id</code> 
+    		and exactly one of <code class="code">jms-destination</code>, <code class="code">queue-name</code>, or <code class="code">topic-name</code>.  A JMS <code class="code">ConnectionFactory</code> reference is also
+    		required, but does not have to be explicitly specified if there is already one configured in the current application context with an id of "connectionFactory".  
+    		For example, to configure a BlazeDS message destination named "chatIn" that uses a Spring-managed ActiveMQ JMS queue with a local ActiveMQ installation:   
+    	</p><pre class="programlisting">
+&lt;bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory"&gt;
+	&lt;property name="brokerURL" value="tcp://localhost:61616"/&gt;
+&lt;/bean&gt;
+	
+&lt;bean id="chatInQueue" class="org.apache.activemq.command.ActiveMQQueue"&gt;
+	&lt;constructor-arg value="queue.flex.chat.in"/&gt;
+&lt;/bean&gt;
+
+&lt;flex:jms-message-destination id="chatIn" jms-destination="chatInQueue" /&gt;    	
+    	</pre><p>
+    		Using <code class="code">queue-name</code> or <code class="code">topic-name</code> will cause the destination to be resolved using a Spring <code class="code">DestinationResolver</code>.  
+    		The <code class="code">destination-resolver</code>, <code class="code">message-converter</code>, and <code class="code">transaction-manager</code> attributes may be used to set custom references 
+    		to a Spring-managed <code class="code">DestinationResolver</code>, <code class="code">MessageConverter</code>, or <code class="code">TransactionManager</code> respectively.    
+    	</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="integration-messaging"></a>6.5.&nbsp;Using Spring Integration Message Destinations</h2></div></div></div><p>
+    		For routing messages with Spring Integration, a special <code class="code">IntegrationAdapter</code> is provided that is able to send/receive messages via a 
+    		<code class="code">MessageChannel</code>.  This is especially useful when you have more complex routing needs for your messages, such as connecting to email or FTP 
+    		endpoints.  The <code class="code">integration-message-destination</code> XML namespace tag is used to expose a Spring Integration <code class="code">MessageChannel</code> as a 
+    		BlazeDS message destination. For example, to configure a BlazeDS message destination named "chatOut" that uses a Spring Integration 
+    		<code class="code">PublishSubscribeChannel</code>:  
+    	</p><pre class="programlisting">
+&lt;integration:publish-subscribe-channel id="chatOutPubSubChannel" /&gt;
+
+&lt;flex:integration-message-destination id="chatOut" message-channel="chatOutPubSubChannel" /&gt;
+		</pre></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="message-template"></a>6.6.&nbsp;Sending AMF Messages with the MessageTemplate</h2></div></div></div><p>
+	    	A convenient <code class="code">MessageTemplate</code> helper class is provided that allows you to push messages to any BlazeDS <code class="code">MessageDestination</code> from a simple
+	    	POJO.  This provides a nice abstraction over push style messaging that hides away the details of the underlying messaging protocol.  Whether using a simple 
+	    	AMF based destination or full-blown JMS, etc., the use of the <code class="code">MessageTemplate</code> stays the same.  The only thing the <code class="code">MessageTemplate</code> requires 
+	    	is a reference to a Spring-managed <code class="code">MessageBroker</code>.  If the <code class="code">MessageTemplate</code> is configured as a Spring bean, it will try and auto-detect 
+	    	the <code class="code">MessageBroker</code> from its application context.  
+    	</p><p>
+    		As an example of how the <code class="code">MessageTemplate</code> could be used, suppose we have a RESTful travel application that has a Flex-based admin console but also 
+    		exposes an API over HTTP.  To give the admin console a "live" view of the data, we want to push updates to it anytime a new hotel booking is created.  Given the 
+    		following setup in our application context:
+    	</p><pre class="programlisting">
+&lt;flex:message-broker /&gt;
+
+&lt;bean id="defaultMessageTemplate" class="org.springframework.flex.messaging.MessageTemplate" /&gt;
+
+&lt;flex:message-destination id="bookingUpdates" /&gt;
+    	</pre><p>
+    		and assuming the Flex client is subscribed to the "bookingUpdates" destination, this could be achieved with the following controller code:
+    	</p><pre class="programlisting">
+@Controller
+public class BookingController {
+	
+	private MessageTemplate template;
+	
+	private BookingService bookingService;
+	
+	@RequestMapping(value="/bookings", method=RequestMethod.POST)
+	public String createBooking(Booking booking){
+		booking = bookingService.saveBooking(booking);
+		template.send("bookingUpdates", booking);
+		return "redirect:/bookings/"+booking.getId();
+	}
+	
+	@Autowired
+	public void setTemplate(MessageTemplate template) {
+		this.template = template;
+	}
+	
+	@Autowired
+	public void setBookingService(BookingService bookingService) {
+		this.bookingService = bookingService;
+	}
+}
+    	</pre></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="samples"></a>Chapter&nbsp;7.&nbsp;Building and Running the Spring BlazeDS Integration Samples</h2></div></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="samples-introduction"></a>7.1.&nbsp;Introduction</h2></div></div></div><p>
+        	Included in the project distribution is a collection of samples called the Spring BlazeDS Integration Test Drive.  This samples project is set up 
+        	to be built with Maven and then imported into Eclipse for running the application via WTP.
+        </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="building-with-maven"></a>7.1.1.&nbsp;Maven Setup</h3></div></div></div><p>
+	            The sample build requires Maven 2.2.0 or greater.  Because the build compiles several seperate Flex and AIR projects, it can require setting the MAVEN_OPTS 
+	            variable for your environment to allocate more memory than the default.  The setting we find works well is:
+	        </p><pre class="programlisting">
+MAVEN_OPTS="-Xms256m -Xmx512m -XX:PermSize=128m -XX:MaxPermSize=256m"
+
+	        </pre></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="samples-build"></a>7.1.2.&nbsp;Building the Test Drive</h3></div></div></div><p>
+	            Once your Maven environment is set up correctly, cd to {project distribution root}/samples/spring-flex-testdrive and execute:
+	        </p><pre class="programlisting">
+mvn clean install
+
+	        </pre><p>
+	            This will first build all of the individual Flex projects and then finally assemble the 'testdrive' WAR project.
+	        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="blazeds-4-maven"></a>7.1.3.&nbsp;Using BlazeDS 4 with Maven</h3></div></div></div><p>
+        		Spring BlazeDS Integration 1.5 requires BlazeDS 4, but as of this writing the BlazeDS 4 artifacts have not yet been published to Maven central.  
+        		The artifacts have been published to the Spring External maven repository (as required for the Spring BlazeDS Integration automated builds).  The 
+        		Test Drive is already configured to use this repository, but to use BlazeDS 4 in your own Maven projects, add the following repository entry 
+        		(either to settings.xml or to your project's pom.xml):
+        	</p><pre class="programlisting">
+&lt;repository&gt;
+    &lt;id&gt;spring-external&lt;/id&gt;
+    &lt;name&gt;Spring External Repository&lt;/name&gt;
+    &lt;url&gt;http://maven.springframework.org/external&lt;/url&gt;
+    &lt;releases&gt;
+        &lt;enabled&gt;true&lt;/enabled&gt;
+	&lt;/releases&gt;
+    &lt;snapshots&gt;
+        &lt;enabled&gt;false&lt;/enabled&gt;
+    &lt;/snapshots&gt;
+&lt;/repository&gt;
+
+	        </pre></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="pre-built-samples"></a>7.1.4.&nbsp;Download the Pre-packaged Test Drive</h3></div></div></div><p>
+	            As a convenience for anyone who is adverse to using Maven and just wants to get the Test Drive up and running quickly in Eclipse, pre-packaged builds 
+	            of the Test Drive can be downloaded directly via the following links:
+	        </p><div class="itemizedlist"><ul type="disc"><li><p><a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://static.springsource.org/spring-flex/docs/1.5.x/samples/spring-flex-testdrive-spring3.zip" target="_top">Spring BlazeDS Integration Test Drive with Spring 3.0</a></p></li></ul></div><p>
+	           Unzip the download and then follow the directions below for importing into Eclipse, substituting the unzipped directory in place of the 
+	           {project distribution root}/spring-flex-samples/spring-flex-testdrive path.
+	        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="samples-eclipse"></a>7.1.5.&nbsp;Importing and Running the Test Drive in Eclipse</h3></div></div></div><p>
+	            The individual Test Drive projects are pre-configured to be imported in Eclipse and run with WTP.  (There are a number of individual projects, so you may want to consider creating a fresh
+	            workspace or at least create a new working set to manage the projects.)  We recommend using the free <a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://www.springsource.com/products/sts" target="_top">SpringSource Tool Suite</a> to work with the samples so that you can take full 
+	            advantage of its extensive Spring support, but any version of Eclipse 3.4+ with WTP should work.  
+	        </p><p>  
+	            To import the samples, select File-&gt;Import...-&gt;General-&gt;Existing Projects into Workspace and navigate to the
+	            {project distribution root}/spring-flex-samples/spring-flex-testdrive directory and import all of the projects found.
+	        </p><p>
+	            There is an individual project for each Flex sample, and one WTP project for the 'testdrive' WAR.  Once the projects have been imported, you can start the web application by selecting the 
+	            'testdrive' project, right-clicking and selecting Run As-&gt;Run on Server.  The samples have been most thoroughly tested in Tomcat 6.0, but should run in any Servlet 2.4 container that WTP supports.  Once 
+	            the application has started successfully, you can access the samples walk-through at <a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://localhost:8080/testdrive" target="_top">http://localhost:8080/testdrive</a> (If running on a server other than 
+	            Tomcat, change the port number as needed.)
+	        </p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="flexaddon"></a>Chapter&nbsp;8.&nbsp;Working with the Flex Addon for Spring Roo</h2></div></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="flexaddon-introduction"></a>8.1.&nbsp;Introduction</h2></div></div></div><p>
+        	Spring Roo brings brings a whole new level of productivity to building Java applications.  From the Spring Roo Reference Guide:
+        </p><p>
+        	"<a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://www.springsource.org/roo" target="_top">Spring Roo</a> is an easy-to-use productivity tool for rapidly building enterprise applications in the 
+        	Java programming language. It allows you to build high-quality, high-performance, lock-in-free enterprise applications in just minutes. Best of all, Roo 
+        	works alongside your existing Java knowledge, skills and experience. You probably won't need to learn anything new to use Roo, as there's no new language 
+        	or runtime platform needed. You simply program in your normal Java way and Roo just works, sitting in the background taking care of the things you don't 
+        	want to worry about."
+        </p><p>
+        	To learn more about Spring Roo itself, you'll find numerous resources from the project's homepage at <a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://www.springsource.org/roo" target="_top">http://www.springsource.org/roo</a>
+        </p><p>
+        	The Flex Addon for Spring Roo aims to raise the bar for developer productivity in building Spring-based RIAs with a Flex client by meeting the 
+        	following goals:  
+        </p><div class="orderedlist"><ol type="1"><li>
+        		Provide the fastest way to get a Spring project configured to use Spring BlazeDS Integration set up and running.
+        	</li><li>
+        		Eliminate the need to manually perform repetitive tasks such as keeping ActionScript and Java domain objects in sync.
+        	</li><li>
+        		Automate round-tripping code-generation of Flex artifacts with a focus on letting developers do what they do best - write code.
+        	</li></ol></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="flex-addon-requirements"></a>8.1.1.&nbsp;Minimum Requirements for the Flex Addon for Spring Roo</h3></div></div></div><p>
+        		Java 5+
+        	</p><p>
+        		Maven 2.2.0+
+        	</p><p>
+        		Spring Roo 1.1.0.M1
+        	</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="flex-addon-setup"></a>8.1.2.&nbsp;Installing the Flex Addon for Spring Roo</h3></div></div></div><p>
+        		The current version of the Flex Addon for Spring Roo is 1.0.0.M1.  The addon is included in the Spring BlazeDS Integration 1.5.0.M1 distribution 
+        		and is also available from the Spring Milestones Maven Repository at <code class="code">http://maven.springframework.org/milestone</code> under the group id 
+        		<code class="code">org.springframework.flex.roo.addon</code> and artifact id <code class="code">org.springframework.flex.roo.addon</code>.
+        	</p><p>
+        		First, ensure that you have Spring Roo 1.1.0.M1 set up correctly by following the <a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://static.springsource.org/spring-roo/reference/html-single/index.html#intro-installation" target="_top">steps found here</a>.
+        	</p><p>
+        		If you've not already done so, download the Spring BlazeDS Integration 1.5.0.M1 <a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://www.springsource.com/download/community?project=Spring%20BlazeDS%20Integration" target="_top">project distribution</a>.
+        	</p><p>
+        		Once you have a working Spring Roo installation, you can install the Flex Addon by simply copying it from <code class="code">{spring_blazeds_dist}/org.springframework.flex.roo.addon-1.0.0.M1.jar</code> into the 
+        		<code class="code">$ROO_HOME/bundle</code> directory.
+        	</p><p>
+        		To verify that the Flex Addon has been picked up and activated, start Spring Roo from a clean directory and execute the command <code class="code">osgi scr list</code>.  You should see <code class="code">org.springframework.flex.roo.addon.FlexCommands</code> 
+        		listed with a status of <code class="code">active</code>.
+        	</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="flex-addon-features"></a>8.1.3.&nbsp;Flex Addon for Spring Roo Features</h3></div></div></div><p>The Flex Addon for Spring Roo provides the following high-level features:</p><div class="itemizedlist"><ul type="disc"><li><p>Automated setup of the necessary Spring, Maven, and Eclipse configuration for a standard Spring BlazeDS Integration project.</p></li><li><p>Generation of Spring BlazeDS Integration <code class="code">@RemotingDestination</code> services with full CRUD capabilities for a given entity.</p></li><li><p>Continuous synchronization of changes between ActionScript and Java domain classes for AMF remoting.</p></li><li><p>Generation of UI scaffold that is continuously updated as changes occur in the corresponding ActionScript or Java classes.</p></li><li><p>Client-side Flex validator generation corresponding to the Bean Validation annotations on the Java model.</p></li></ul></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="flex-addon-commands"></a>8.1.4.&nbsp;Flex Commands</h3></div></div></div><p>
+        		The Flex Addon provides its functionality through just a few simple commands.
+        	</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="flex-setup-command"></a>8.1.4.1.&nbsp;flex setup</h4></div></div></div><p>
+	        		Once a basic Spring Roo project has been set up, the Flex Addon provides a single <code class="code">flex setup</code> command for adding the necessary Spring, Maven, and Eclipse 
+	        		configuration for a Flex project backed by Spring BlazeDS Integration.  Its execution is as simple as:  
+	        	</p><pre class="programlisting">
+org.example.rootunes roo&gt; <span class="bold"><strong>flex setup</strong></span>
+Created SRC_MAIN_WEBAPP/WEB-INF/flex
+Created SRC_MAIN_WEBAPP/WEB-INF/flex/services-config.xml
+Created SRC_MAIN_WEBAPP/WEB-INF/spring
+Created SRC_MAIN_WEBAPP/WEB-INF/spring/flex-config.xml
+Created SRC_MAIN_WEBAPP/WEB-INF/spring/webmvc-config.xml
+Created SRC_MAIN_WEBAPP/WEB-INF/web.xml
+Created SRC_MAIN_WEBAPP/WEB-INF/urlrewrite.xml
+Managed SRC_MAIN_WEBAPP/WEB-INF/web.xml
+...
+				</pre><p>
+					Once you have the basic Flex project infrastructure in place, you can start generating remoting destinations and scaffolding.
+				</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="flex-remoting-scaffold-command"></a>8.1.4.2.&nbsp;flex remoting scaffold</h4></div></div></div><p>
+					The <code class="code">flex remoting scaffold</code> command will create a Spring-managed <code class="code">@RemotingDestination</code> and Flex UI scaffolding for a given Java domain entity.  It 
+					requires a <code class="code">--name</code> option that specifies the name of the <code class="code">@RemotingDestination</code> class to be created, and an <code class="code">--entity</code> option which will 
+					be inferred from the current Roo command context if not specified explicitly. 
+				</p><pre class="programlisting">
+~.domain.Artist roo&gt; <span class="bold"><strong>flex remoting scaffold</strong></span> --name ~.service.ArtistService          
+Created SRC_MAIN_JAVA/org/example/rootunes/service
+Created SRC_MAIN_JAVA/org/example/rootunes/service/ArtistService.java
+Created ROOT/src/main/flex/org/example/rootunes/domain
+Created ROOT/src/main/flex/org/example/rootunes/domain/Artist.as
+Created SRC_MAIN_JAVA/org/example/rootunes/service/ArtistService_Roo_Service.aj
+Managed ROOT/src/main/flex/rootunes_scaffold.mxml
+Managed ROOT/src/main/flex/rootunes_scaffold-config.xml
+Created ROOT/src/main/flex/org/example/rootunes/presentation/artist
+Created ROOT/src/main/flex/org/example/rootunes/presentation/artist/ArtistEvent.as
+Created ROOT/src/main/flex/org/example/rootunes/presentation/artist/ArtistView.mxml
+Created ROOT/src/main/flex/org/example/rootunes/presentation/artist/ArtistForm.mxml	
+				</pre><p>
+					As shown in the listing above, the command causes the following to be generated:
+				</p><div class="itemizedlist"><ul type="disc"><li><p>A <code class="code">@RemotingDestination</code> that provides persistence operations for the given entity.</p></li><li><p>An ActionScript class that mirrors the Java entity.  If there were any JPA relationships in the Java entity, additional ActionScript classes would be generated 
+						accordingly.  Once this link is established between an ActionScript and Java class, the addon will automatically keep the two in sync and propagate any changes made to 
+						the fields in either the ActionScript or Java class, whether those changes are made manually in the code, or with the aid of a Roo command.</p></li><li><p>Flex UI scaffolding for carrying out CRUD operation on the entity.  Anytime fields are added to the ActionScript class, the necessary updates will be made to 
+						the proper .mxml artifacts to reflect the new fields.  (Note - At this time, the Flex addon will not delete fields from the .mxml once they've been added.  The syncronization 
+						capabilities will be expanded in further releases.)
+						</p></li></ul></div><p>
+					The <code class="code">@RemotingDestination</code> that gets generated (in this example, <code class="code">org.example.rootunes.ArtistService</code>), will automatically provide basic CRUD 
+					functionality for the given <code class="code">Artist</code> entity.  The generated methods that provide this functionality are as follows:
+				</p><div class="informaltable"><table border="1"><colgroup><col><col></colgroup><thead><tr><th align="center">Method Signature&nbsp;</th><th align="center">Comment&nbsp;</th></tr></thead><tbody><tr><td>public Artist <span class="bold"><strong>create</strong></span>(Artist artist){..}</td><td>The create method will persist a newly created Artist instance and return the persistent instance.</td></tr><tr><td>public Artist <span class="bold"><strong>show</strong></span>(Long id) {..}</td><td>The show method will return an existing Artist instance matching the provided id.</td></tr><tr><td>public List&lt;Artist&gt; <span class="bold"><strong>list</strong></span>() {..}</td><td>The list method will return a list of all existing Artist instances.</td></tr><tr><td>public List&lt;Artist&gt; <span class="bold"><strong>listPaged</strong></span>(Integer page, Integer size) {..}</td><td>The listPaged method will return a list containing a subset of existing Artist instances according to the provided page and size parameters.</td></tr><tr><td>public Artist <span class="bold"><strong>update</strong></span>(Artist artist){..}</td><td>The update method will update and already persistent Artist instance and return the persistent instance.</td></tr><tr><td>public void <span class="bold"><strong>delete</strong></span>(Long id){..}</td><td>The delete method will remove an existing Artist instance matching the provided id.</td></tr></tbody></table></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="flex-remoting-all-command"></a>8.1.4.3.&nbsp;flex remoting all</h4></div></div></div><p>
+					The <code class="code">flex remoting all</code> command is a convenient variation of <code class="code">flex remoting scaffold</code> that will create a Spring-managed <code class="code">@RemotingDestination</code> 
+					and Flex UI scaffolding for all Java domain entities in a given <code class="code">--package</code> if it does not already exist.  Its usage is shown below:
+				</p><pre class="programlisting">
+roo&gt; <span class="bold"><strong>flex remoting all</strong></span> --package ~.service
+Created SRC_MAIN_JAVA/org/example/rootunes/service
+Created SRC_MAIN_JAVA/org/example/rootunes/service/ArtistService.java
+Created ROOT/src/main/flex/org/example/rootunes/domain
+Created ROOT/src/main/flex/org/example/rootunes/domain/Artist.as
+Created ROOT/src/main/flex/org/example/rootunes/domain/Album.as
+Created SRC_MAIN_JAVA/org/example/rootunes/service/AlbumService.java
+Created SRC_MAIN_JAVA/org/example/rootunes/service/ArtistService_Roo_Service.aj
+Managed ROOT/src/main/flex/rootunes_scaffold.mxml
+Managed ROOT/src/main/flex/rootunes_scaffold-config.xml
+Created ROOT/src/main/flex/org/example/rootunes/presentation/artist
+Created ROOT/src/main/flex/org/example/rootunes/presentation/artist/ArtistEvent.as
+Created ROOT/src/main/flex/org/example/rootunes/presentation/artist/ArtistView.mxml
+Created ROOT/src/main/flex/org/example/rootunes/presentation/artist/ArtistForm.mxml
+Created SRC_MAIN_JAVA/org/example/rootunes/service/AlbumService_Roo_Service.aj
+Managed ROOT/src/main/flex/rootunes_scaffold.mxml
+Managed ROOT/src/main/flex/rootunes_scaffold-config.xml
+Created ROOT/src/main/flex/org/example/rootunes/presentation/album
+Created ROOT/src/main/flex/org/example/rootunes/presentation/album/AlbumEvent.as
+Created ROOT/src/main/flex/org/example/rootunes/presentation/album/AlbumView.mxml
+Created ROOT/src/main/flex/org/example/rootunes/presentation/album/AlbumForm.mxml
+				</pre></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="running-flex-addon-project"></a>8.1.5.&nbsp;Building and Running a Flex Addon Project</h3></div></div></div><p>
+        		The project configuration provided by the <code class="code">flex setup</code> command prepares the project for both running and building from the command line, via Maven, or running as a Flex 
+        		and WTP project in SpringSource Tool Suite with the Flash Builder v4 plugin installed.
+        	</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="building-with-maven"></a>8.1.5.1.&nbsp;Building and Running a Flex Addon Project with Maven</h4></div></div></div><p>With the necessary configuration for both the Java and Flex source already set up, building the project is as simple as:</p><pre class="programlisting">
+mvn install
+        		</pre><p>Similarly, running the project from the command line via the already configured Maven Tomcat plugin is as simple as:</p><pre class="programlisting">
+mvn tomcat:run        		
+        		</pre><p>
+        			(Note - The first time you execute these commands with an unpopulated Maven cache, it will take a few minutes to download the necessary dependencies.  Don't worry, after you've done 
+        			this once, the commands execute much faster.)
+        		</p><p>Once server startup is complete, you should be able to access the scaffolded Flex UI at <code class="code">http://localhost:8080/{project_name}/{project_name}_scaffold.html</code>  - for example, 
+        		in the sample Spring Roo script bundled with the distribution (and in the above examples), we create a project named "rootunes".  Once the server is started, the Flex UI can be accessed at:</p><div class="itemizedlist"><ul type="disc"><li><p><a xmlns:xlink="http://www.w3.org/1999/xlink" href="http://localhost:8080/rootunes/rootunes_scaffold.html" target="_top">http://localhost:8080/rootunes/rootunes_scaffold.html</a></p></li></ul></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="building-with-sts"></a>8.1.5.2.&nbsp;Importing a Flex Addon Project into SpringSource Tool Suite and Flash Builder</h4></div></div></div><p>To generate the necessary Eclipse metadata for the project, from the project root you must execute</p><pre class="programlisting">
+mvn eclipse:eclipse
+        		</pre><p>Once that is done, the project can be imported into SpringSource Tool Suite and run on a server via WTP.</p><p>  
+		            To import the project, select File-&gt;Import...-&gt;General-&gt;Existing Projects into Workspace and navigate to the
+		            project's root directory and import the Eclipse project found there.  If you have created the project outside of your Eclipse workspace, you should 
+		            check the "Copy projects into workspace" box in the import dialog in order for the generated Flash Builder metadata to work correctly.
+		        </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="sample-script"></a>8.1.6.&nbsp;Running the Sample Roo Script</h3></div></div></div><p>
+        		A sample Spring Roo script that generates a complete Flex sample project is included in the Spring BlazeDS Integration distribution.  The script can be found 
+        		at {project_distribution_root}/samples/rootunes.roo
+        	</p><p>
+        		The script can be run using Spring Roo's <code class="code">script</code> command.  Create a new project directory, and then start the Roo shell.  From there, you can point 
+        		the <code class="code">script</code> command at the location of the <code class="code">rootunes.roo</code> script.  For example, if you've unzipped the distribution in your home directory, 
+        		the command would be:
+        	</p><pre class="programlisting">
+roo&gt; script --file ~/spring-flex-1.5.0.M1/samples/rootunes.roo
+        	</pre><p>
+        		Once the script has completed, you can build and run the example using the steps described above.
+        	</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="known-issues"></a>8.1.7.&nbsp;Known Issues</h3></div></div></div><p>
+        		As this is just an M1 release, there are a number of known issues and planned functionality yet to be completed.  Some of the more glaring ones are:
+        	</p><div class="itemizedlist"><ul type="disc"><li><p>
+        				The scaffolding does not currently generate form fields for editing ONE_TO_MANY or MANY_TO_MANY relationships, though it does generate the correct
+        				field types for the relationship in the ActionScript class, so you are free to add the remaining code for editing such relationships manually.
+        			</p><p>
+        				The generated ActionScript entities currently ignore any superclasses or interfaces that the Java type may declare.
+        			</p><p>
+        				The ActionScript parser we are using is not able to generate property getters and setters, though it should still parse them without error. 
+        			</p><p>
+        				The ActionScript parser does not give us control over the exact placement of fields in the ActionScript, instead always adding them at the bottom of 
+        				the Class declaration.  You are, of course, free to move the field declarations around to your liking without any adverse effects.
+        			</p><p>
+        				The round-trip merging functionality for tags in .mxml artifacts is incomplete.  It currently can add new fields, but not update or remove existing ones.  This 
+        				will be remedied through a similar approach as Roo 1.1 uses for .jspx artifacts, only we'll use Flex meta-tags instead of additional tag attributes.
+        			</p><p>
+        				The round-trip updating of <code class="code">script</code> blocks in .mxml files is destructive, meaning it will overwrite changes.  This will be remedied in the future 
+        				by applying the same non-destructive ActionScript metadata layer that we use for the .as files.
+        			</p></li></ul></div></div></div></div></div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+<!-- Begin 2nd Google code - a mod -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script>
+<script type="text/javascript">var pageTracker = _gat._getTracker("UA-2728886-3");
+pageTracker._setDomainName("none");pageTracker._setAllowLinker(true);
+pageTracker._trackPageview();var OrgTracker = _gat._getTracker("UA-2728886-2");
+OrgTracker._trackPageview();</script>
+ <!-- End 2nd Google code -->
+
+
+
+</body>
+</html>

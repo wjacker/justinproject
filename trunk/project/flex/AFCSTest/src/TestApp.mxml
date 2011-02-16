@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955"
+    minHeight="600" xmlns:datagrid="com.justin.common.components.datagrid.*"
+    creationComplete="initRPCConnection()">
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+        <![CDATA[
+            import com.justin.common.components.datagrid.PageableGridEvent;
+            import com.justin.common.components.datagrid.Pager;
+
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+            import mx.formatters.DateFormatter;
+            import mx.messaging.ChannelSet;
+            import mx.messaging.channels.AMFChannel;
+            import mx.rpc.AbstractOperation;
+            import mx.rpc.AsyncToken;
+            import mx.rpc.events.FaultEvent;
+            import mx.rpc.events.ResultEvent;
+            import mx.rpc.remoting.RemoteObject;
+            private var pager: Pager = new Pager();
+            private var initial : Boolean = true;
+            private var recordCount : Number = 0;
+            private var service:RemoteObject;
+            private var dateFormatter:DateFormatter=new DateFormatter();
+
+            private function initRPCConnection():void
+            {
+                service=new RemoteObject();
+                var channel:ChannelSet=new ChannelSet();
+                var amf:AMFChannel=new AMFChannel();
+                amf.uri="http://flexmessagebroadcast.appspot.com/messagebroker/amf";
+                channel.addChannel(amf);
+                service.channelSet=channel;
+                service.destination="EmployeeService";
+
+                service.showBusyCursor=true;
+                dateFormatter.formatString="MM/DD/YYYY";
+
+                initPagedDataGrid();
+            }
+
+            private function initPagedDataGrid() : void
+            {
+                pagedDataGrid.collectionLength=recordCount;
+                pagedDataGrid.addEventListener(PageableGridEvent.OUT_OF_RANGE, dataIsOutOfRange);
+                pagedDataGrid.addEventListener(PageableGridEvent.SORT, dataSort);
+
+                getPageCount();
+            }
+
+            private function dataIsOutOfRange(evt:PageableGridEvent):void
+            {
+                if (pagedDataGrid.sorted)
+                {
+                    pager.recFrom=evt.data.start;
+                    pager.sortField=evt.data.field;
+                    pager.pageSize=20;
+                    pager.sortType=evt.data.sortType;
+                    //LogManager.debug("pager recFrom:" + evt.data.start + " sortField:" + evt.data.field + " pageSize:" + RECCOUNTPERGAGE + " sortType:" + evt.data.sortType, NAME);
+                }
+                else
+                {
+                    pager.recFrom=evt.data.start;
+                    pager.pageSize=20;
+                    //LogManager.debug("pager recFrom:" + evt.data.start + " pageSize:" + RECCOUNTPERGAGE, NAME);
+                }
+
+                var op:AbstractOperation=service.getOperation("getEmployeeListBy");
+                op.arguments=[pager];
+
+                var token:AsyncToken=AsyncToken(op.send());
+                token.addResponder(new mx.rpc.Responder(dataResultHandler, faultHandler));
+            }
+
+            private function dataSort(evt:PageableGridEvent):void
+            {
+                pager.recFrom=evt.data.start;
+                pager.pageSize=20;
+                pager.sortField=evt.data.field;
+                pager.sortType=evt.data.sortType;
+
+                var op:AbstractOperation=service.getOperation("getEmployeeListBy");
+                op.arguments=[pager];
+
+                var token:AsyncToken=AsyncToken(op.send());
+                token.addResponder(new mx.rpc.Responder(dataResultHandler, faultHandler));
+            }
+
+            private function dateFunction(item:Object, column:DataGridColumn):String
+            {
+                return dateFormatter.format(item[column.dataField]);
+            }
+
+            private function getPageCount() : void
+            {
+                var op:AbstractOperation=service.getOperation("getPageCount");
+
+                var token:AsyncToken=AsyncToken(op.send());
+                token.addResponder(new mx.rpc.Responder(function (event : ResultEvent) : void
+                {
+                    recordCount = event.result as Number;
+                    pagedDataGrid.collectionLength=recordCount;
+                    pager.recFrom=0;
+                    pager.pageSize=20;
+                    var op:AbstractOperation=service.getOperation("getEmployeeListBy");
+                    op.arguments=[pager];
+
+                    var token:AsyncToken=AsyncToken(op.send());
+                    token.addResponder(new mx.rpc.Responder(dataResultHandler, faultHandler));
+                }, faultHandler));
+            }
+
+            private function dataResultHandler(result : ResultEvent) : void
+            {
+                if (initial) {
+                    initial = false;
+                    pagedDataGrid.dataProvider = result.result as ArrayCollection;
+                } else {
+                    pagedDataGrid.appendData(result.result);
+                }
+            }
+
+            private function faultHandler(fault:FaultEvent):void
+            {
+                Alert.show("code:\n" + fault.fault.faultCode + "\n\nMessage:\n" + fault.fault.faultString + "\n\nDetail:\n" + fault.fault.faultDetail, "Error");
+            }
+        ]]>
+    </fx:Script>
+
+    <datagrid:PagedDataGrid id="pagedDataGrid"
+        width="100%"
+        height="100%">
+        <datagrid:columns>
+            <mx:DataGridColumn dataField="firstName"
+                headerText="firstName"/>
+            <mx:DataGridColumn dataField="lastName"
+                headerText="lastName"/>
+            <mx:DataGridColumn dataField="title"
+                headerText="title"/>
+            <mx:DataGridColumn dataField="hireDate"
+                headerText="hireDate"
+                labelFunction="dateFunction"/>
+        </datagrid:columns>
+    </datagrid:PagedDataGrid>
+</s:Application>

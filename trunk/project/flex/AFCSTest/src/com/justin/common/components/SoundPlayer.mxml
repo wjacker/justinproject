@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="50"
+    creationComplete="init();" xmlns:components="com.justin.common.components.*">
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+        <![CDATA[
+            import com.justin.proxy.SongProxy;
+            import com.justin.vo.Song;
+
+            import mx.collections.ArrayCollection;
+            import mx.collections.Sort;
+            import mx.collections.SortField;
+            import mx.controls.Alert;
+            import mx.core.FlexGlobals;
+            import mx.core.IFlexDisplayObject;
+            import mx.core.UIComponent;
+            import mx.managers.PopUpManager;
+            import mx.rpc.events.ResultEvent;
+
+            public var musicUrl:String = "";
+            private var music:Sound;
+            private var pausePosition:int = 0;
+            private var channel:SoundChannel;
+            private var stf:SoundTransform = new SoundTransform();
+            private var isPlay:Boolean = false;
+            private var time:Timer=new Timer(50, 0);
+            private var loader:URLLoader = new URLLoader();
+            //private var request:URLRequest = new URLRequest("assets/PlayList.xml");
+            private var songList:ArrayCollection;
+            private var playIndex:int = 0;
+            private var volume:Number = 0.5;
+            private var songProxy:SongProxy = SongProxy.getInstance();
+
+            private function init():void{
+                /* flash.system.Security.allowDomain("*");
+                flash.system.Security.allowInsecureDomain("*");
+                flash.system.Security.loadPolicyFile("/crossdomain.xml"); */
+                //ExternalInterface.addCallback("playMusic",playMusicHandler);
+                time.addEventListener(TimerEvent.TIMER, timeHander);
+                /* loader.load(request);
+                loader.addEventListener(Event.COMPLETE, onComplete);
+                loader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler); */
+                songProxy.getRemoteDelegate().invokeWithHandler(songListBackHandler, null, "getSongList");
+            }
+
+            public function ioErrorHandler(e:IOErrorEvent):void
+            {
+                trace(e);
+            }
+
+            public function songListBackHandler(event:ResultEvent):void
+            {
+                songList = event.result as ArrayCollection;
+                var songSort:Sort = new Sort();
+                var songSortField:SortField = new SortField();
+                songSortField.name = "playOrder";
+                songSortField.compareFunction = songSortFunction;
+                songSort.fields = [songSortField];
+                songList.sort = songSort;
+                songList.refresh();
+                playFirst();
+            }
+
+            private function songSortFunction(songA:Song, songB:Song):int
+            {
+                if((songA.playOrder == null || songA.playOrder == "" || isNaN(Number(songA.playOrder)))
+                    && (songB.playOrder == null || songB.playOrder == "" || isNaN(Number(songB.playOrder))))
+                    return 0;
+                else if(songA.playOrder == null || songA.playOrder == "" || isNaN(Number(songA.playOrder)))
+                    return 1;
+                else if(songB.playOrder == null || songB.playOrder == "" || isNaN(Number(songB.playOrder)))
+                    return -1;
+                else if(Number(songA.playOrder) == Number(songB.playOrder))
+                    return 0;
+                else if(Number(songA.playOrder) < Number(songB.playOrder))
+                    return -1;
+                else
+                    return 1;
+            }
+
+            private function timeHander(event:TimerEvent):void
+            {
+                if(channel == null || music == null)
+                    return;
+                pausePosition = channel.position;
+                //sldrPosition.value = pausePosition / music.length * 100;
+                //sldrPosition.toolTip = channel.position.toString();
+                if(pausePosition/music.length  >= 0.999)
+                {
+                    time.stop();
+                    pausePosition = 0;
+                    nextMusic();
+                }
+            }
+
+            public function playMusicHandler(song:Song):void{
+                if(song == null || song.url == "")
+                    return;
+                try
+                {
+                    if(channel != null)
+                    {
+                        channel.stop();
+                    }
+
+                    txtTitle.text = song.author;
+                    musicUrl = song.url;
+                    playMusic();
+                }
+                catch (e:Error)
+                {
+                    trace(e.toString());
+                }
+            }
+            private function playFirst():void
+            {
+                if(songList && songList.length > 0)
+                {
+                    var song:Song = songList.getItemAt(playIndex) as Song;
+                    playMusicHandler(song);
+                }
+            }
+
+            private function preMusic():void{
+            }
+
+            private function nextMusic():void
+            {
+                playIndex++;
+                if(playIndex == songList.length)
+                    playIndex = 0;
+
+                var song:Song = songList.getItemAt(playIndex) as Song;
+                playMusicHandler(song);
+            }
+
+            public static const specialCharRegList:Array = [/%2F/g, /%3A/g, /%2E/g];
+            public static const specialCharRegReplaceList:Array = ["/", ":", "."];
+
+            private function playMusic():void{
+                try
+                {
+                    time.start();
+
+                    /* musicUrl = encodeURIComponent(musicUrl);
+                    for(var i:int = 0; i < specialCharRegList.length; i++)
+                    {
+                    musicUrl = musicUrl.replace(specialCharRegList[i], specialCharRegReplaceList[i]);
+                    } */
+
+                    var request:URLRequest = new URLRequest(musicUrl);
+                    music = new Sound(request);
+                    channel = music.play(pausePosition);
+                    ChangeSoundTransform();
+                    /* playS.visible = false;
+                    stopS.visible = true; */
+                }
+                catch(e:Error)
+                {
+                    trace(e.message);
+                }
+
+            }
+
+            private function judgeType():Boolean{
+                var mname:Array = musicUrl.split(".");
+                if(mname[mname.length - 1] != "mp3"){
+                    return false;
+                }else{
+                    return true;
+                }
+            }
+
+            /* private function songChangeHandler(e:Event):void{
+            channel.removeEventListener(Event.SOUND_COMPLETE, songChangeHandler);
+            nextMusic();
+            } */
+
+            public function callHTML(jsFunc:String = "setNextMusic"):void {
+                var m:String = ExternalInterface.call(jsFunc);
+            }
+
+            private function playing():void{
+                if(isPlay){
+                    channel = music.play(pausePosition);
+                    /* playS.visible = false;
+                    stopS.visible = true; */
+                }else{
+                    pausePosition = channel.position;
+                    channel.stop();
+                    /* playS.visible = true;
+                    stopS.visible = false; */
+                }
+                isPlay = !isPlay;
+            }
+
+            /* private function playPosition():void{
+                pausePosition = sldrPosition.value /100 * music.length;
+                channel.stop();
+                channel = music.play(pausePosition);
+            } */
+
+            private const panning:int=0;
+            private function ChangeSoundTransform(event:Event = null):void{
+                volume = sldrVolume.value;
+                stf.volume = volume;
+                channel.soundTransform = stf;
+                if(stf.volume == 0)
+                {
+                    mute.visible = true;
+                    unmute.visible = false;
+                }
+                else
+                {
+                    mute.visible = false;
+                    unmute.visible = true;
+                }
+            }
+
+            private var volumeTimer:Timer = new Timer(50, 0);
+            private var currentVolumn:Number;
+
+            private function muteSong()
+            {
+                mute.visible = true;
+                unmute.visible = false;
+                sldrVolume.enabled = false;
+                volumeTimer.stop();
+                volumeTimer.removeEventListener(TimerEvent.TIMER, muteSongTimerHandler);
+                volumeTimer.removeEventListener(TimerEvent.TIMER, unmuteSongTimerHandler);
+                volumeTimer.addEventListener(TimerEvent.TIMER, muteSongTimerHandler);
+                volumeTimer.start();
+                currentVolumn = stf.volume;
+            }
+
+            private function muteSongTimerHandler(event:TimerEvent):void
+            {
+                currentVolumn = Math.max(currentVolumn - 0.05, 0);
+                stf.volume = currentVolumn;
+                channel.soundTransform = stf;
+                if(stf.volume == 0)
+                {
+                    volumeTimer.stop();
+                    pausePosition = channel.position
+                    channel.stop();
+                }
+
+            }
+
+            private function unmuteSongTimerHandler(event:TimerEvent):void
+            {
+                currentVolumn = Math.min(currentVolumn + 0.1, volume);
+                stf.volume = currentVolumn;
+                channel.soundTransform = stf;
+                if(stf.volume == volume)
+                {
+                    volumeTimer.stop();
+                }
+
+            }
+
+            private function unmuteSong()
+            {
+                mute.visible = false;
+                unmute.visible = true;
+                sldrVolume.enabled = true;
+                volumeTimer.stop();
+                volumeTimer.removeEventListener(TimerEvent.TIMER, muteSongTimerHandler);
+                volumeTimer.removeEventListener(TimerEvent.TIMER, unmuteSongTimerHandler);
+                volumeTimer.addEventListener(TimerEvent.TIMER, unmuteSongTimerHandler);
+                volumeTimer.start();
+                channel.stop();
+                stf.volume = currentVolumn;
+                channel = music.play(pausePosition, 0, stf);
+            }
+
+            private function popupPlayList():void
+            {
+                var playListPopup:PlayListPopup = new PlayListPopup();
+                playListPopup.songList = this.songList;
+                PopUpManager.addPopUp(playListPopup, DisplayObject(FlexGlobals.topLevelApplication), false);
+                PopUpManager.centerPopUp(playListPopup);
+            }
+        ]]>
+    </fx:Script>
+
+    <s:layout>
+        <s:HorizontalLayout verticalAlign="bottom"/>
+    </s:layout>
+    <components:Visualization width="287" height="50" channel="left" bars="32" type="bars"/>
+    <mx:Canvas>
+        <mx:Image source="assets/unmute.png" click="muteSong()" width="16" height="15" id="unmute" buttonMode="true" useHandCursor="true"/>
+        <mx:Image source="assets/mute.png" click="unmuteSong();" width="16" height="15" id="mute" buttonMode="true" useHandCursor="true" visible="false"/>
+    </mx:Canvas>
+    <mx:HSlider id="sldrVolume" minimum="0" maximum="1" value="0.5" tickLength="0.1" change="ChangeSoundTransform()" width="120"/>
+    <s:Label id="txtTitle" width="100%"/>
+    <s:Button label="Edit Play List" click="popupPlayList()" visible="{FlexGlobals.topLevelApplication.auth.userName == 'Justin_Admin'}"/>
+</s:Group>

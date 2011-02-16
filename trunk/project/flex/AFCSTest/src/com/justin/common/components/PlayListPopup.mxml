@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx" width="500"
+    close="closeTitleWindow()">
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+        <![CDATA[
+            import com.justin.proxy.SongProxy;
+            import com.justin.vo.Song;
+
+            import mx.collections.ArrayCollection;
+            import mx.managers.PopUpManager;
+            import mx.rpc.events.ResultEvent;
+            [Bindable]
+            public var songList:ArrayCollection;
+            private var songProxy:SongProxy = SongProxy.getInstance();
+
+            private function addSong():void
+            {
+                var song:Song = new Song();
+                song.url = songUrl.text;
+                song.author = songAuthor.text;
+                song.playOrder = playOrder.text;
+                songProxy.getRemoteDelegate().invokeWithHandler(function(resultHandler:ResultEvent):void
+                {
+                    if(resultHandler.result)
+                        songList.addItem(song);
+                }, null, "addSong", song);
+            }
+
+            private function saveSong():void
+            {
+                if(songListDG.selectedItem)
+                {
+                    var editSong:Song = songListDG.selectedItem as Song;
+                    editSong.url = songUrl.text;
+                    editSong.author = songAuthor.text;
+                    editSong.playOrder = playOrder.text;
+
+                    songProxy.getRemoteDelegate().invokeWithHandler(function(resultHandler:ResultEvent):void
+                    {
+                        if(resultHandler.result)
+                        {
+                            songListDG.selectedItem.url = songUrl.text;
+                            songListDG.selectedItem.author = songAuthor.text;
+                            songListDG.selectedItem.playOrder = isNaN(Number(playOrder.text)) ? 0 : Number(playOrder.text);
+                            songList.refresh();
+                        }
+                    }, null, "editSong", songListDG.selectedItem as Song);
+                }
+            }
+
+            private function closeTitleWindow():void
+            {
+                PopUpManager.removePopUp(this);
+            }
+
+            private function updateSongInfo():void
+            {
+                songUrl.text = songListDG.selectedItem.url;
+                songAuthor.text = songListDG.selectedItem.author;
+                playOrder.text = songListDG.selectedItem.playOrder;
+            }
+
+            private function deleteSong():void
+            {
+                if(songListDG.selectedItem)
+                {
+                    songProxy.getRemoteDelegate().invokeWithHandler(function(resultHandler:ResultEvent):void
+                    {
+                        if(resultHandler.result)
+                        {
+                            songList.removeItemAt(songList.getItemIndex(songListDG.selectedItem));
+                            songList.refresh();
+                        }
+                    }, null, "deleteSong", songListDG.selectedItem as Song);
+                }
+            }
+        ]]>
+    </fx:Script>
+    <s:layout>
+        <s:VerticalLayout paddingLeft="5" paddingTop="5" paddingRight="5" paddingBottom="5"/>
+    </s:layout>
+
+    <mx:DataGrid id="songListDG" dataProvider="{songList}" width="100%" itemClick="updateSongInfo()">
+        <mx:columns>
+            <mx:DataGridColumn dataField="url" editable="true"/>
+            <mx:DataGridColumn dataField="author" editable="true"/>
+            <mx:DataGridColumn dataField="playOrder" editable="true"/>
+        </mx:columns>
+    </mx:DataGrid>
+    <mx:HBox width="100%">
+        <s:Label text="URL" width="50"/>
+        <mx:TextInput id="songUrl" width="100%"/>
+    </mx:HBox>
+    <mx:HBox width="100%">
+        <s:Label text="Author" width="50"/>
+        <mx:TextInput id="songAuthor" width="100%"/>
+    </mx:HBox>
+    <mx:HBox width="100%">
+        <s:Label text="Play Order" width="50"/>
+        <mx:TextInput id="playOrder" width="100%"/>
+    </mx:HBox>
+    <mx:HBox>
+        <s:Button label="Save" click="saveSong()"/>
+        <s:Button label="Add" click="addSong()"/>
+        <s:Button label="Delete" click="deleteSong()"/>
+    </mx:HBox>
+</s:TitleWindow>
