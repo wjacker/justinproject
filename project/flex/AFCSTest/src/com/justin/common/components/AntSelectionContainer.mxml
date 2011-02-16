@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    width="100%" height="100%"
+    creationComplete="init()">
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+        <![CDATA[
+            import flash.filters.GlowFilter;
+
+            import mx.controls.ToolTip;
+            import mx.core.IToolTip;
+            import mx.managers.ToolTipManager;
+
+
+            private var imageSelection:AntsSelection;
+            private var selectionToolTip:IToolTip;
+            private function init():void
+            {
+                imageSelection = new AntsSelection();
+                drawCanvas.addChild(imageSelection);
+                imageSelection.width = drawCanvas.width;
+                imageSelection.height = drawCanvas.height;
+                imageSelection.x = 0;
+                imageSelection.y = 0;
+            }
+
+            private function mouseDownHandler(event:MouseEvent):void
+            {
+                if(imageSelection.hasSelection)
+                {
+                    imageSelection.visible = false;
+                    imageSelection.clearSelection();
+                }
+
+                imageSelection.zoom = 1;
+                if(relaxRect.selected)
+                {
+                    imageSelection.vertices = [getLocalPoint()]
+                }
+                else
+                {
+                    imageSelection.vertices = [getLocalPoint(), getLocalPoint(), getLocalPoint(),getLocalPoint(),getLocalPoint()];
+                }
+
+                drawCanvas.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
+                drawCanvas.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
+            }
+
+            private function mouseMoveHandler(event:MouseEvent):void
+            {
+                imageSelection.visible = true;
+                if(relaxRect.selected)
+                {
+                    imageSelection.addVertex(getLocalPoint());
+                }
+                else
+                {
+                    var verticels:Array = imageSelection.vertices;
+                    var startPoint:Point = verticels[0] as Point;
+                    var mousePoint:Point = getLocalPoint();
+
+                    verticels[1] = new Point(startPoint.x, mousePoint.y);
+                    verticels[2] = new Point(mousePoint.x, mousePoint.y);
+                    verticels[3] = new Point(mousePoint.x, startPoint.y);
+                    verticels[4] = startPoint;
+                    imageSelection.vertices = verticels;
+                }
+
+            }
+
+            private function getLocalPoint():Point
+            {
+                return drawCanvas.globalToLocal(new Point(stage.mouseX, stage.mouseY));
+            }
+
+            private function mouseUpHandler(event:MouseEvent):void
+            {
+                selectItems();
+                drawCanvas.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
+                drawCanvas.removeEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
+                if(relaxRect.selected && imageSelection.vertices.length > 0)
+                {
+                    imageSelection.addVertex(imageSelection.vertices[0]);
+                }
+                /*  imageSelection.setActualSize(100,100);
+                imageSelection.addVertex(new Point(event.localX, event.localY)); */
+            }
+
+            private function applyAntsColor():void
+            {
+                var newAntsColor:Array = [getARGBBy(fromColor.selectedColor, 255), getARGBBy(toColor.selectedColor, 255)];
+                imageSelection.applyAntsColor(newAntsColor);
+
+            }
+
+            private function applyAntsAngle():void
+            {
+                //imageSelection.applyAntsAngle(antsAngle.value);
+            }
+
+            private function getARGBBy(rgb:uint, newAlpha:uint):uint
+            {
+                var argb:uint = 0;
+                argb += (newAlpha<<24);
+                argb += (rgb);
+                return argb;
+            }
+
+            private function selectItems():void
+            {
+                var displayObj:DisplayObject;
+                for (var i:Number=0;i<drawCanvas.numChildren;i++)
+                {
+                    displayObj = drawCanvas.getChildAt(i);
+                    if(imageSelection.pointInSelection(drawCanvas.localToGlobal(new Point(displayObj.x, displayObj.y)), true)){
+                        drawCanvas.getChildAt(i).filters = [new GlowFilter(0xFF33FF33,1,3,3,4)];
+                    }else{
+                        drawCanvas.getChildAt(i).filters=[];
+                    }
+                }
+            }
+
+        ]]>
+    </fx:Script>
+    <s:HGroup paddingTop="30">
+        <s:CheckBox id="relaxRect" label="Relax Selection"/>
+        <s:Label text="Ants Line Color:"/>
+        <mx:ColorPicker id="fromColor" selectedColor="#000000" change="applyAntsColor()"/>
+        <mx:ColorPicker id="toColor" selectedColor="#FFFFFF" change="applyAntsColor()"/>
+        <!--<s:Label text="Ants Angle:"/>
+        <s:HSlider id="antsAngle" minimum="0" maximum="180" snapInterval="1" value="45" change="applyAntsAngle()" width="200"/>-->
+    </s:HGroup>
+
+    <mx:Canvas id="drawCanvas" mouseDown="mouseDownHandler(event)" width="100%" height="100%">
+        <mx:Button x="429" y="94" label="Button"/>
+        <mx:CheckBox x="193" y="108" label="Checkbox"/>
+        <mx:ColorPicker x="120" y="151"/>
+        <mx:ComboBox x="305" y="191"></mx:ComboBox>
+        <mx:Label x="146" y="195" text="Label"/>
+        <mx:NumericStepper x="215" y="238"/>
+        <mx:TextInput x="225" y="316"/>
+    </mx:Canvas>
+</s:VGroup>

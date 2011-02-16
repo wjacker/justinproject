@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    width="100%" height="100%" applicationComplete="init()">
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+        <![CDATA[
+            import flash.net.navigateToURL;
+            private var syntaxHighlighter:SyntaxHighlighter;
+            private var cssString:String ='.mxml{color:#0033FF;} .string{color:#880000;} .keyword {color:#0033FF;fontWeight:bold;} .comment {color:#008800; } .number {color:#006666; } .function{color:#339966;fontWeight:bold;} .var{color:#6699CC;fontWeight:bold;}';
+            private var codeStyle:StyleSheet;
+            private var fileExtension:String = null;
+            [Bindable]
+            private var fileName:String;
+            private var fileUrl:String;
+
+            private function init():void
+            {
+                addVersion();
+                fileUrl = loaderInfo.parameters.fileUrl ? loaderInfo.parameters.fileUrl : "";
+                //fileUrl = "http://172.20.30.38:8080/lisa/ASCoder.mxml";
+                var reg:RegExp = /[^\/\.]*\.[^\.\/]+/g;
+                var match:Array = fileUrl.match(reg);
+                var loader:URLLoader = new URLLoader();
+                loader.addEventListener(IOErrorEvent.IO_ERROR, onError);
+                loader.addEventListener(Event.COMPLETE, onLoaded);
+                codeStyle = new StyleSheet();
+                codeStyle.parseCSS(cssString);
+                codeTextArea.styleSheet = codeStyle;
+
+                if(match.length > 0)
+                {
+                    fileName = match[match.length - 1];
+                    fileExtension = fileName.split(".")[1];
+                }
+                if(fileUrl == "")
+                {
+                    codeTextArea.text = "No Code";
+                    downloadCode.visible = false;
+                }
+                else
+                {
+                    loader.load(new URLRequest(fileUrl));
+                    downloadCode.visible = true;
+                }
+            }
+
+            private function onLoaded(event:Event):void
+            {
+                try
+                {
+                    var codeString:String = event.target.data.toString();
+                    var reg:RegExp = /\n/g;
+                    codeString = codeString.replace(reg, "");
+                    syntaxHighlighter = new SyntaxHighlighter();
+                    var res:String;
+                    res = syntaxHighlighter.highlighterCode(codeString, fileExtension);
+                    codeTextArea.text = "";
+                    codeTextArea.htmlText = "";
+                    codeTextArea.htmlText = res;
+                }
+                catch(error:Error)
+                {
+                    codeTextArea.htmlText = "Error parse:" + error.message;
+                }
+            }
+
+            private function onError(event:IOErrorEvent):void
+            {
+                trace(event.text);
+            }
+
+            private function addVersion():void
+            {
+                var constxtMenu:ContextMenu = new ContextMenu();
+                constxtMenu.hideBuiltInItems();
+                var versionItem:ContextMenuItem = new ContextMenuItem("Coder Highlighter Version 1 By Justin Wang");
+                constxtMenu.customItems = [versionItem];
+                this.contextMenu = constxtMenu;
+            }
+        ]]>
+    </fx:Script>
+    <s:layout>
+        <s:VerticalLayout gap="8"/>
+    </s:layout>
+    <s:HGroup>
+        <s:Label text="{fileName}" fontWeight="bold"/>
+        <mx:Image id="downloadCode" visible="false" buttonMode="true" click="{navigateToURL(new URLRequest(fileUrl),'_self')}" source="@Embed('Text.png')" toolTip="Download Code"/>
+    </s:HGroup>
+    <mx:TextArea id="codeTextArea" editable="true"
+        width="100%" height="100%">
+    </mx:TextArea>
+</s:Application>

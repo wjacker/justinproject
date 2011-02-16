@@ -3,39 +3,43 @@
                 xmlns:mx="http://www.adobe.com/2006/mxml"
                 applicationComplete="init()"
                 xmlns:rtc="AfcsNameSpace"
-                xmlns:datagrid="com.justin.common.components.datagrid.*">
+                xmlns:datagrid="com.justin.common.components.datagrid.*" xmlns:components="com.justin.common.components.*">
 
     <mx:Script>
         <![CDATA[
-        	import com.justin.common.components.datagrid.Pager;
-            import com.justin.common.components.datagrid.PageableGridEvent;
-            import mx.formatters.DateFormatter;
-            import mx.controls.dataGridClasses.DataGridColumn;
-            import mx.rpc.AsyncToken;
-            import mx.rpc.AbstractOperation;
-            import mx.messaging.channels.AMFChannel;
-            import mx.messaging.ChannelSet;
-            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBHighlightAreaShapeDescriptor;
-            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBTextShapeDescriptor;
-            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBArrowShapeDescriptor;
-            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBLineShapeDescriptor;
-            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBRoundedRectangleShapeDescriptor;
-            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBRectangleShapeDescriptor;
-            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBEllipseShapeDescriptor;
             import com.adobe.coreUI.controls.whiteboardClasses.WBShapeDescriptor;
-            import mx.collections.ArrayCollection;
-            import com.adobe.rtc.events.CollectionNodeEvent;
-            import mx.events.CollectionEvent;
+            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBArrowShapeDescriptor;
+            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBEllipseShapeDescriptor;
+            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBHighlightAreaShapeDescriptor;
+            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBLineShapeDescriptor;
+            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBRectangleShapeDescriptor;
+            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBRoundedRectangleShapeDescriptor;
+            import com.adobe.coreUI.controls.whiteboardClasses.shapeDescriptors.WBTextShapeDescriptor;
             import com.adobe.coreUI.events.WBModelEvent;
             import com.adobe.rtc.events.AuthenticationEvent;
+            import com.adobe.rtc.events.CollectionNodeEvent;
             import com.adobe.rtc.events.ConnectSessionEvent;
             import com.adobe.rtc.events.SessionEvent;
-            import mx.core.IFlexDisplayObject;
-            import mx.managers.PopUpManager;
+            import com.justin.common.components.MyLinkButton;
+            import com.justin.common.components.datagrid.PageableGridEvent;
+            import com.justin.common.components.datagrid.Pager;
+            import com.justin.proxy.EmployeeProxy;
+
+            import mx.collections.ArrayCollection;
             import mx.controls.Alert;
+            import mx.controls.dataGridClasses.DataGridColumn;
+            import mx.core.IFlexDisplayObject;
+            import mx.events.CollectionEvent;
+            import mx.formatters.DateFormatter;
+            import mx.managers.PopUpManager;
+            import mx.messaging.ChannelSet;
+            import mx.messaging.channels.AMFChannel;
+            import mx.rpc.AbstractOperation;
+            import mx.rpc.AsyncToken;
             import mx.rpc.events.FaultEvent;
             import mx.rpc.events.ResultEvent;
             import mx.rpc.remoting.RemoteObject;
+            private var employeeProxy:EmployeeProxy = EmployeeProxy.getInstance();
 
             [Bindable]
             protected var _shapes:ArrayCollection=new ArrayCollection();
@@ -43,7 +47,6 @@
             protected var _lastMouseX:int=15;
             protected var _lastMouseY:int=15;
 
-            private var service:RemoteObject;
             private var dateFormatter:DateFormatter=new DateFormatter();
             private var pager: Pager = new Pager();
             private var initial : Boolean = true;
@@ -136,35 +139,19 @@
 
             private function initRPCConnection():void
             {
-                service=new RemoteObject();
-                var channel:ChannelSet=new ChannelSet();
-                var amf:AMFChannel=new AMFChannel();
-                amf.uri="http://flexmessagebroadcast.appspot.com/messagebroker/amf";
-                channel.addChannel(amf);
-                service.channelSet=channel;
-                service.destination="EmployeeService";
-
-                service.showBusyCursor=true;
             }
-            
+
             private function getPageCount() : void
             {
-            	var op:AbstractOperation=service.getOperation("getPageCount");
-                //op.arguments=[pager];
-                
-                var token:AsyncToken=AsyncToken(op.send());
-                token.addResponder(new mx.rpc.Responder(function (event : ResultEvent) : void
+                employeeProxy.getRemoteDelegate().invokeWithHandler(function (event : ResultEvent) : void
                 {
-                	recordCount = event.result as Number;
-                	pagedDataGrid.collectionLength=recordCount;
-                	pager.recFrom=0;
+                    recordCount = event.result as Number;
+                    pagedDataGrid.collectionLength=recordCount;
+                    pager.recFrom=0;
                     pager.pageSize=20;
-                    var op:AbstractOperation=service.getOperation("getEmployeeListBy");
-	                op.arguments=[pager];
-	                
-	                var token:AsyncToken=AsyncToken(op.send());
-	                token.addResponder(new mx.rpc.Responder(dataResultHandler, faultHandler));
-                }, faultHandler));
+
+                    employeeProxy.getRemoteDelegate().invokeWithHandler(dataResultHandler, faultHandler, "getEmployeeListBy", pager)
+                },faultHandler,"getPageCount")
             }
 
             private function dataIsOutOfRange(evt:PageableGridEvent):void
@@ -175,28 +162,21 @@
                     pager.sortField=evt.data.field;
                     pager.pageSize=20;
                     pager.sortType=evt.data.sortType;
-                    //LogManager.debug("pager recFrom:" + evt.data.start + " sortField:" + evt.data.field + " pageSize:" + RECCOUNTPERGAGE + " sortType:" + evt.data.sortType, NAME);
                 }
                 else
                 {
                     pager.recFrom=evt.data.start;
                     pager.pageSize=20;
-                    //LogManager.debug("pager recFrom:" + evt.data.start + " pageSize:" + RECCOUNTPERGAGE, NAME);
                 }
-                
-                var op:AbstractOperation=service.getOperation("getEmployeeListBy");
-                op.arguments=[pager];
-                
-                var token:AsyncToken=AsyncToken(op.send());
-                token.addResponder(new mx.rpc.Responder(dataResultHandler, faultHandler));
+                employeeProxy.getRemoteDelegate().invokeWithHandler(dataResultHandler, faultHandler, "getEmployeeListBy", pager);
             }
-            
+
             private function dataResultHandler(result : ResultEvent) : void
             {
             	if (initial) {
 					initial = false;
 					pagedDataGrid.dataProvider = result.result as ArrayCollection;
-					
+
 				} else {
 					pagedDataGrid.appendData(result.result);
 				}
@@ -208,12 +188,7 @@
                 pager.pageSize=20;
                 pager.sortField=evt.data.field;
                 pager.sortType=evt.data.sortType;
-                
-                var op:AbstractOperation=service.getOperation("getEmployeeListBy");
-                op.arguments=[pager];
-                
-                var token:AsyncToken=AsyncToken(op.send());
-                token.addResponder(new mx.rpc.Responder(dataResultHandler, faultHandler));
+                employeeProxy.getRemoteDelegate().invokeWithHandler(dataResultHandler, faultHandler, "getEmployeeListBy", pager);
             }
 
             private function login():void
@@ -633,18 +608,14 @@
 
             private function executeQuery():void
             {
-                var op:AbstractOperation=service.getOperation("executeQuery");
                 if (from_txt.text != "" && to_txt.text != "")
                 {
-                    op.arguments=[query_text.text, from_txt.text, to_txt.text];
+                    employeeProxy.getRemoteDelegate().invokeWithHandler(resultHandler, faultHandler, "executeQuery", query_text.text, from_txt.text, to_txt.text);
                 }
                 else
                 {
-                    op.arguments=[query_text.text];
+                    employeeProxy.getRemoteDelegate().invokeWithHandler(resultHandler, faultHandler, "executeQuery", query_text.text);
                 }
-
-                var token:AsyncToken=AsyncToken(op.send());
-                token.addResponder(new mx.rpc.Responder(resultHandler, faultHandler));
             }
 
             private function faultHandler(fault:FaultEvent):void
@@ -661,14 +632,41 @@
             {
                 return dateFormatter.format(item[column.dataField]);
             }
-            
+
             private function initPagedDataGrid() : void
             {
             	pagedDataGrid.collectionLength=recordCount;
                 pagedDataGrid.addEventListener(PageableGridEvent.OUT_OF_RANGE, dataIsOutOfRange);
                 pagedDataGrid.addEventListener(PageableGridEvent.SORT, dataSort);
-                
+
                 getPageCount();
+            }
+
+            private var  loader:URLLoader = new URLLoader();
+
+            public function initResource() : void
+            {
+                loader.load(new URLRequest("resource/resource.xml"));
+                loader.addEventListener(Event.COMPLETE, loadComplete);
+            }
+
+            public function loadComplete(event:Event) : void
+            {
+                var linkButton:MyLinkButton = null;
+                var resourceXML:XML = new XML(this.loader.data);
+                if (resourceXML.hasOwnProperty("resource"))
+                {
+                    var resourceLinkList:XMLList = resourceXML.resource.link;
+                    for each (var resourceLink:XML in resourceLinkList)
+                    {
+
+                        linkButton = new MyLinkButton();
+                        linkButton.label = resourceLink.@name;
+                        linkButton.linkURL = resourceLink.@url;
+                        this.resourceContainer.addChild(linkButton);
+                    }
+                }
+                return;
             }
         ]]>
     </mx:Script>
@@ -748,302 +746,350 @@
              | AFCS application UI wrapped in ConnectSession
         -->
         <rtc:ConnectSessionContainer id="sess"
-                                     authenticator="{auth}"
-                                     initialRoomSettings="{settings}"
-                                     autoLogin="false"
-                                     width="100%"
-                                     height="100%">
-            <mx:HBox width="100%"
-                     height="100%"
-                     horizontalGap="0">
-                <mx:VBox>
-                    <mx:TabBar dataProvider="viewStack"
-                               direction="vertical"
-                               width="100"
-                               verticalGap="0"/>
-                    <!--mx:Button label="Disconnect" click="sess.close()"/-->
-                </mx:VBox>
+             authenticator="{auth}"
+             initialRoomSettings="{settings}"
+             autoLogin="false"
+             width="100%"
+             height="100%">
+            <mx:VBox width="100%" height="100%">
+                <mx:HBox width="100%"
+                    height="100%"
+                    horizontalGap="0">
+                    <mx:VBox>
+                        <mx:TabBar dataProvider="viewStack"
+                            direction="vertical"
+                            width="100"
+                            verticalGap="0"/>
+                        <!--mx:Button label="Disconnect" click="sess.close()"/-->
+                    </mx:VBox>
 
-                <mx:ViewStack id="viewStack"
-                              width="100%"
-                              height="100%"
-                              borderSides="left top right bottom"
-                              borderStyle="solid"
-                              borderThickness="2">
-                    <!--
-                         | Chat pod and roster
-                    -->
-                    <mx:HBox label="Chat"
-                             width="100%"
-                             height="100%">
-                        <rtc:SimpleChat width="60%"
-                                        height="100%"/>
-                        <mx:List alternatingItemColors="[#DFDFDF,#EEEEEE]"
-                                 dataProvider="{sess.userManager.userCollection}"
-                                 width="40%"
-                                 height="100%"
-                                 labelField="displayName"/>
-                    </mx:HBox>
-
-                    <!--
-                         | Camera/Audio pod
-                    -->
-                    <mx:Canvas label="Audio/Video"
-                               width="100%"
-                               height="100%">
-                        <rtc:WebCamera left="0"
-                                       right="0"
-                                       top="0"
-                                       bottom="0"/>
-                    </mx:Canvas>
-
-                    <!--
-                         | Whiteboard pod
-                    -->
-                    <mx:Canvas label="Whiteboard"
-                               width="100%"
-                               height="100%">
-                        <!-- for some strange reason the shapesToolBar starts outside the WhiteBoard canvas
-                             so when the whiteBoard is created I move shapesToolBar back to where it should be -->
-                        <rtc:SharedWhiteBoard id="default_WB"
-                                              width="100%"
-                                              height="100%"
-                                              creationComplete="wbInit()"/>
-                        <mx:HBox id="shapeController"
-                                 alpha="1.0"
-                                 backgroundColor="#000000"
-                                 backgroundAlpha="0.5"
-                                 left="5"
-                                 right="5"
-                                 bottom="10"
-                                 paddingBottom="5"
-                                 paddingTop="5"
-                                 paddingLeft="5"
-                                 paddingRight="5"
-                                 verticalAlign="middle">
-                            <mx:VBox verticalAlign="middle"
-                                     horizontalAlign="center">
-                                <mx:ComboBox id="shapeListCombo"
-                                             dataProvider="{_shapes}"
-                                             color="0x000000"
-                                             width="165"
-                                             prompt="Select ShapeId"
-                                             change="onShapeSelected()"/>
-                                <mx:VBox click="deleteTheShape()"
-                                         verticalGap="0"
-                                         horizontalGap="0">
-                                    <mx:Label text="X"
-                                              fontSize="25"
-                                              color="#FF0000"
-                                              textAlign="center"/>
-                                    <mx:Label text="delete"
-                                              textAlign="center"/>
-                                </mx:VBox>
-                                <mx:Button id="changeShape"
-                                           click="modifyTheShape()"
-                                           label="Modify Shape"/>
-                            </mx:VBox>
-                            <mx:VRule height="100%"/>
-                            <mx:Grid verticalGap="10"
-                                     horizontalGap="10">
-                                <mx:GridRow>
-                                    <mx:GridItem>
-                                        <mx:HBox>
-                                            <mx:Label text="X:"
-                                                      width="60"/>
-                                            <mx:TextInput id="xInput"
-                                                          width="40"/>
-                                        </mx:HBox>
-                                    </mx:GridItem>
-                                    <mx:GridItem>
-                                        <mx:HBox>
-                                            <mx:Label text="Y:"
-                                                      width="50"/>
-                                            <mx:TextInput id="yInput"
-                                                          width="40"/>
-                                        </mx:HBox>
-                                    </mx:GridItem>
-                                </mx:GridRow>
-                                <mx:GridRow>
-                                    <mx:GridItem>
-                                        <mx:HBox>
-                                            <mx:Label text="Width:"
-                                                      width="60"/>
-                                            <mx:TextInput id="widthInput"
-                                                          width="40"/>
-                                        </mx:HBox>
-                                    </mx:GridItem>
-                                    <mx:GridItem>
-                                        <mx:HBox>
-                                            <mx:Label text="Height:"
-                                                      width="50"/>
-                                            <mx:TextInput id="heightInput"
-                                                          width="40"/>
-                                        </mx:HBox>
-                                    </mx:GridItem>
-                                </mx:GridRow>
-                                <mx:GridRow>
-                                    <mx:GridItem>
-                                        <mx:HBox verticalAlign="middle"
-                                                 horizontalAlign="center">
-                                            <mx:Label text="Rotation:"
-                                                      width="60"/>
-                                            <mx:TextInput id="rotationInput"
-                                                          width="40"/>
-                                        </mx:HBox>
-                                    </mx:GridItem>
-                                    <mx:GridItem horizontalAlign="center"
-                                                 verticalAlign="middle">
-                                    </mx:GridItem>
-                                </mx:GridRow>
-                            </mx:Grid>
-                            <mx:VRule height="100%"/>
-                            <mx:Grid id="propertyGrid"
-                                     verticalGap="10"
-                                     horizontalGap="10">
-                                <mx:GridRow>
-                                    <mx:GridItem>
-                                        <mx:CheckBox id="dropShadow"
-                                                     label="Drop Shadow"/>
-                                    </mx:GridItem>
-                                    <mx:GridItem>
-                                        <mx:CheckBox id="gradientFill"
-                                                     label="Gradient Fill"/>
-                                    </mx:GridItem>
-                                </mx:GridRow>
-                                <mx:GridRow>
-                                    <mx:GridItem>
-                                        <mx:HBox>
-                                            <mx:ColorPicker id="lineColor"
-                                                            showTextField="true"
-                                                            selectedColor="0xFFFFFF"
-                                                            labelField="Line Color"/>
-                                            <mx:Label text="Line Color"/>
-                                        </mx:HBox>
-                                    </mx:GridItem>
-                                    <mx:GridItem>
-                                        <mx:HBox>
-                                            <mx:ColorPicker id="primaryColor"
-                                                            showTextField="true"
-                                                            selectedColor="0xFFFFFF"
-                                                            labelField="Primary Color"/>
-                                            <mx:Label text="Primary Color"/>
-                                        </mx:HBox>
-                                    </mx:GridItem>
-                                </mx:GridRow>
-                                <mx:GridRow>
-                                    <mx:GridItem>
-                                        <mx:VBox verticalAlign="middle"
-                                                 horizontalAlign="center">
-                                            <mx:HSlider id="alphaHSlider"
-                                                        minimum="0"
-                                                        maximum="1"
-                                                        value="0"
-                                                        dataTipPlacement="top"
-                                                        tickColor="0x323232"
-                                                        snapInterval="0.1"
-                                                        tickInterval="0.2"
-                                                        labels="[0,1]"
-                                                        allowTrackClick="true"
-                                                        liveDragging="true"/>
-                                            <mx:Label text="Alpha"/>
-                                        </mx:VBox>
-                                    </mx:GridItem>
-                                    <mx:GridItem horizontalAlign="center"
-                                                 verticalAlign="middle">
-                                        <mx:VBox verticalAlign="middle"
-                                                 horizontalAlign="center">
-                                            <mx:ComboBox id="lineThickness"
-                                                         dataProvider="{new Array(1,2,5,10,15,20)}"
-                                                         color="0x000000"/>
-                                            <mx:Label text="Line Thickness"/>
-                                        </mx:VBox>
-                                    </mx:GridItem>
-                                </mx:GridRow>
-                            </mx:Grid>
-                            <mx:VRule height="100%"/>
-                            <mx:VBox>
-                                <mx:ComboBox id="shapeType"
-                                             dataProvider="{new Array('Ellipse', 'Rectangle', 'Rounded Rectangle', 'Line', 'Highlight Area', 'Text', 'Arrow')}"/>
-                                <mx:Button id="addShape"
-                                           click="addShapeClick()"
-                                           label="Add Shape"/>
-                            </mx:VBox>
+                    <mx:ViewStack id="viewStack"
+                        width="100%"
+                        height="100%">
+                        <!--
+                        | Chat pod and roster
+                        -->
+                        <mx:HBox label="Chat"
+                            width="100%"
+                            height="100%">
+                            <rtc:SimpleChat width="60%"
+                                height="100%"/>
+                            <mx:List alternatingItemColors="[#DFDFDF,#EEEEEE]"
+                                dataProvider="{sess.userManager.userCollection}"
+                                width="40%"
+                                height="100%"
+                                labelField="displayName"/>
                         </mx:HBox>
-                    </mx:Canvas>
-                    <mx:Canvas label="Pageable Data Grid" creationComplete="initPagedDataGrid()"
-                               width="100%"
-                               height="100%">
-                        <mx:VDividedBox width="100%"
-                                 height="100%">
-                            <mx:VBox width="100%">
-                            	<mx:Label text="Paged Data Grid(support sort)"/>
-	                            <datagrid:PagedDataGrid id="pagedDataGrid"
-	                                                    width="100%"
-	                                                    height="100%">
-	                                <datagrid:columns>
-	                                    <mx:DataGridColumn dataField="firstName"
-	                                                       headerText="firstName"/>
-	                                    <mx:DataGridColumn dataField="lastName"
-	                                                       headerText="lastName"/>
-	                                    <mx:DataGridColumn dataField="title"
-	                                                       headerText="title"/>
-	                                    <mx:DataGridColumn dataField="hireDate"
-	                                                       headerText="hireDate"
-	                                                       labelFunction="dateFunction"/>
-	                                </datagrid:columns>
-	                            </datagrid:PagedDataGrid>
-                            </mx:VBox>
-                            
-                            <mx:VBox width="100%" visible="false">
-	                            <mx:Label text="query SQL text"/>
-	                            <mx:TextArea x="10"
-	                                         y="27"
-	                                         width="100%"
-	                                         height="150"
-	                                         id="query_text"
-	                                         text="select from com.justin.project.database.dao.Employee order by firstName"/>
-	                            <mx:HBox>
-	                                <mx:Label text="Data range from"/>
-	                                <mx:TextInput id="from_txt"
-	                                              text="0"
-	                                              restrict="0-9"/>
-	                                <mx:Label text="to"/>
-	                                <mx:TextInput id="to_txt"
-	                                              text="20"
-	                                              restrict="0-9"/>
-	                            </mx:HBox>
-	                            <mx:Button x="10"
-	                                       y="132"
-	                                       label="executeQuery"
-	                                       click="executeQuery()"/>
-	                            <mx:DataGrid id="queryResult"
-	                                         width="100%"
-	                                         height="100%">
-	                                <mx:columns>
-	                                    <mx:DataGridColumn dataField="firstName"
-	                                                       headerText="firstName"/>
-	                                    <mx:DataGridColumn dataField="lastName"
-	                                                       headerText="lastName"/>
-	                                    <mx:DataGridColumn dataField="title"
-	                                                       headerText="title"/>
-	                                    <mx:DataGridColumn dataField="hireDate"
-	                                                       headerText="hireDate"
-	                                                       labelFunction="dateFunction"/>
-	                                </mx:columns>
-	                            </mx:DataGrid>
-	                    	</mx:VBox>
-                        </mx:VDividedBox>
-                    </mx:Canvas>
 
-                    <!--
-                         | Fileshare pod
-                    -->
-                    <!--<mx:Canvas label="FileShare" width="100%" height="100%">
-                         <rtc:FileShare left="0" right="0" top="0" bottom="0"/>
-                         </mx:Canvas>-->
-                </mx:ViewStack>
-            </mx:HBox>
+                        <!--
+                        | Camera/Audio pod
+                        -->
+                        <mx:Canvas label="Audio/Video"
+                            width="100%"
+                            height="100%">
+                            <rtc:WebCamera left="0"
+                                right="0"
+                                top="0"
+                                bottom="0"/>
+                        </mx:Canvas>
+
+                        <!--
+                        | Whiteboard pod
+                        -->
+                        <mx:Canvas label="Whiteboard"
+                            width="100%"
+                            height="100%">
+                            <!-- for some strange reason the shapesToolBar starts outside the WhiteBoard canvas
+                            so when the whiteBoard is created I move shapesToolBar back to where it should be -->
+                            <rtc:SharedWhiteBoard id="default_WB"
+                                width="100%"
+                                height="100%"
+                                creationComplete="wbInit()"/>
+                            <mx:HBox id="shapeController"
+                                alpha="1.0"
+                                backgroundColor="#000000"
+                                backgroundAlpha="0.5"
+                                left="5"
+                                right="5"
+                                bottom="10"
+                                paddingBottom="5"
+                                paddingTop="5"
+                                paddingLeft="5"
+                                paddingRight="5"
+                                verticalAlign="middle">
+                                <mx:VBox verticalAlign="middle"
+                                    horizontalAlign="center">
+                                    <mx:ComboBox id="shapeListCombo"
+                                        dataProvider="{_shapes}"
+                                        color="0x000000"
+                                        width="165"
+                                        prompt="Select ShapeId"
+                                        change="onShapeSelected()"/>
+                                    <mx:VBox click="deleteTheShape()"
+                                        verticalGap="0"
+                                        horizontalGap="0">
+                                        <mx:Label text="X"
+                                            fontSize="25"
+                                            color="#FF0000"
+                                            textAlign="center"/>
+                                        <mx:Label text="delete"
+                                            textAlign="center"/>
+                                    </mx:VBox>
+                                    <mx:Button id="changeShape"
+                                        click="modifyTheShape()"
+                                        label="Modify Shape"/>
+                                </mx:VBox>
+                                <mx:VRule height="100%"/>
+                                <mx:Grid verticalGap="10"
+                                    horizontalGap="10">
+                                    <mx:GridRow>
+                                        <mx:GridItem>
+                                            <mx:HBox>
+                                                <mx:Label text="X:"
+                                                    width="60"/>
+                                                <mx:TextInput id="xInput"
+                                                    width="40"/>
+                                            </mx:HBox>
+                                        </mx:GridItem>
+                                        <mx:GridItem>
+                                            <mx:HBox>
+                                                <mx:Label text="Y:"
+                                                    width="50"/>
+                                                <mx:TextInput id="yInput"
+                                                    width="40"/>
+                                            </mx:HBox>
+                                        </mx:GridItem>
+                                    </mx:GridRow>
+                                    <mx:GridRow>
+                                        <mx:GridItem>
+                                            <mx:HBox>
+                                                <mx:Label text="Width:"
+                                                    width="60"/>
+                                                <mx:TextInput id="widthInput"
+                                                    width="40"/>
+                                            </mx:HBox>
+                                        </mx:GridItem>
+                                        <mx:GridItem>
+                                            <mx:HBox>
+                                                <mx:Label text="Height:"
+                                                    width="50"/>
+                                                <mx:TextInput id="heightInput"
+                                                    width="40"/>
+                                            </mx:HBox>
+                                        </mx:GridItem>
+                                    </mx:GridRow>
+                                    <mx:GridRow>
+                                        <mx:GridItem>
+                                            <mx:HBox verticalAlign="middle"
+                                                horizontalAlign="center">
+                                                <mx:Label text="Rotation:"
+                                                    width="60"/>
+                                                <mx:TextInput id="rotationInput"
+                                                    width="40"/>
+                                            </mx:HBox>
+                                        </mx:GridItem>
+                                        <mx:GridItem horizontalAlign="center"
+                                            verticalAlign="middle">
+                                        </mx:GridItem>
+                                    </mx:GridRow>
+                                </mx:Grid>
+                                <mx:VRule height="100%"/>
+                                <mx:Grid id="propertyGrid"
+                                    verticalGap="10"
+                                    horizontalGap="10">
+                                    <mx:GridRow>
+                                        <mx:GridItem>
+                                            <mx:CheckBox id="dropShadow"
+                                                label="Drop Shadow"/>
+                                        </mx:GridItem>
+                                        <mx:GridItem>
+                                            <mx:CheckBox id="gradientFill"
+                                                label="Gradient Fill"/>
+                                        </mx:GridItem>
+                                    </mx:GridRow>
+                                    <mx:GridRow>
+                                        <mx:GridItem>
+                                            <mx:HBox>
+                                                <mx:ColorPicker id="lineColor"
+                                                    showTextField="true"
+                                                    selectedColor="0xFFFFFF"
+                                                    labelField="Line Color"/>
+                                                <mx:Label text="Line Color"/>
+                                            </mx:HBox>
+                                        </mx:GridItem>
+                                        <mx:GridItem>
+                                            <mx:HBox>
+                                                <mx:ColorPicker id="primaryColor"
+                                                    showTextField="true"
+                                                    selectedColor="0xFFFFFF"
+                                                    labelField="Primary Color"/>
+                                                <mx:Label text="Primary Color"/>
+                                            </mx:HBox>
+                                        </mx:GridItem>
+                                    </mx:GridRow>
+                                    <mx:GridRow>
+                                        <mx:GridItem>
+                                            <mx:VBox verticalAlign="middle"
+                                                horizontalAlign="center">
+                                                <mx:HSlider id="alphaHSlider"
+                                                    minimum="0"
+                                                    maximum="1"
+                                                    value="0"
+                                                    dataTipPlacement="top"
+                                                    tickColor="0x323232"
+                                                    snapInterval="0.1"
+                                                    tickInterval="0.2"
+                                                    labels="[0,1]"
+                                                    allowTrackClick="true"
+                                                    liveDragging="true"/>
+                                                <mx:Label text="Alpha"/>
+                                            </mx:VBox>
+                                        </mx:GridItem>
+                                        <mx:GridItem horizontalAlign="center"
+                                            verticalAlign="middle">
+                                            <mx:VBox verticalAlign="middle"
+                                                horizontalAlign="center">
+                                                <mx:ComboBox id="lineThickness"
+                                                    dataProvider="{new Array(1,2,5,10,15,20)}"
+                                                    color="0x000000"/>
+                                                <mx:Label text="Line Thickness"/>
+                                            </mx:VBox>
+                                        </mx:GridItem>
+                                    </mx:GridRow>
+                                </mx:Grid>
+                                <mx:VRule height="100%"/>
+                                <mx:VBox>
+                                    <mx:ComboBox id="shapeType"
+                                        dataProvider="{new Array('Ellipse', 'Rectangle', 'Rounded Rectangle', 'Line', 'Highlight Area', 'Text', 'Arrow')}"/>
+                                    <mx:Button id="addShape"
+                                        click="addShapeClick()"
+                                        label="Add Shape"/>
+                                </mx:VBox>
+                            </mx:HBox>
+                        </mx:Canvas>
+                        <mx:Canvas label="Pageable Data Grid" creationComplete="initPagedDataGrid()"
+                            width="100%"
+                            height="100%">
+                            <mx:TabNavigator width="100%" height="100%">
+                                <mx:VDividedBox width="100%" label="Example"
+                                    height="100%">
+                                    <mx:VBox width="100%" label="Example">
+                                        <mx:Label text="Paged Data Grid(support sort)"/>
+                                        <datagrid:PagedDataGrid id="pagedDataGrid"
+                                            width="100%"
+                                            height="100%">
+                                            <datagrid:columns>
+                                                <mx:DataGridColumn dataField="firstName"
+                                                    headerText="firstName"/>
+                                                <mx:DataGridColumn dataField="lastName"
+                                                    headerText="lastName"/>
+                                                <mx:DataGridColumn dataField="title"
+                                                    headerText="title"/>
+                                                <mx:DataGridColumn dataField="hireDate"
+                                                    headerText="hireDate"
+                                                    labelFunction="dateFunction"/>
+                                            </datagrid:columns>
+                                        </datagrid:PagedDataGrid>
+                                    </mx:VBox>
+                                    <mx:VBox width="100%">
+
+                                    </mx:VBox>
+                                </mx:VDividedBox>
+                                <mx:VBox label="Source Code">
+                                    <mx:LinkButton label="DownLoad Front End Code" click="{navigateToURL(new URLRequest('http://flexmessagebroadcast.appspot.com/resource/PageGridCode.rar'), '_self');}"/>
+
+                                    <mx:Label text="Back End Code"/>
+
+                                    <mx:TextArea width="100%" height="50%">
+                                        <mx:text>
+                                            <![CDATA[
+                                            public List<Employee> getEmployeeListBy(Pager pager)
+                                            {
+                                            ...find employeeList according to pager.
+                                            return List<Employee>;
+                                            }
+
+                                            public int getPageCount()
+                                            {
+                                            ...calculate All record number
+                                            return int;
+                                            }
+                                            ]]>
+                                        </mx:text>
+
+                                    </mx:TextArea>
+
+                                </mx:VBox>
+                                <mx:VBox width="100%" label="Query Window">
+                                    <mx:Label text="query SQL text"/>
+                                    <mx:TextArea x="10"
+                                        y="27"
+                                        width="100%"
+                                        height="150"
+                                        id="query_text"
+                                        text="select from com.justin.project.database.dao.Employee order by firstName"/>
+                                    <mx:HBox>
+                                        <mx:Label text="Data range from"/>
+                                        <mx:TextInput id="from_txt"
+                                            text="0"
+                                            restrict="0-9"/>
+                                        <mx:Label text="to"/>
+                                        <mx:TextInput id="to_txt"
+                                            text="20"
+                                            restrict="0-9"/>
+                                    </mx:HBox>
+                                    <mx:Button x="10"
+                                        y="132"
+                                        label="executeQuery"
+                                        click="executeQuery()"/>
+                                    <mx:DataGrid id="queryResult"
+                                        width="100%"
+                                        height="100%">
+                                        <mx:columns>
+                                            <mx:DataGridColumn dataField="firstName"
+                                                headerText="firstName"/>
+                                            <mx:DataGridColumn dataField="lastName"
+                                                headerText="lastName"/>
+                                            <mx:DataGridColumn dataField="title"
+                                                headerText="title"/>
+                                            <mx:DataGridColumn dataField="hireDate"
+                                                headerText="hireDate"
+                                                labelFunction="dateFunction"/>
+                                        </mx:columns>
+                                    </mx:DataGrid>
+                                </mx:VBox>
+                            </mx:TabNavigator>
+
+                        </mx:Canvas>
+
+                        <!--<mx:VBox label="Google Map">
+                        <mx:HBox height="25" width="100%">
+                        <mx:Label text="Enter address: "/>
+                        <mx:TextInput dropShadowColor="0" enter="{this.doFlyTo(event);}" id="address" text="Shang Hai"/>
+                        <mx:Button click="{this.doFlyTo(event);}" id="submitButton" label="Search"/>
+                        <mx:Spacer width="100%"/>
+                        <mx:Button click="{this.createMarker();}" enabled="false" id="createLocation" label="Create" toolTip="Create My Location Marker"/>
+                        <mx:Button click="{this.modifyMarker();}" enabled="false" id="modifyLocation" label="Modify" toolTip="Modify My Location Marker"/>
+                        <mx:Button click="{this.saveMarker();}" enabled="false" id="saveLocation" label="Save" toolTip="Save My Location Marker"/>
+                        <mx:Button click="{this.deleteMarker();}" enabled="false" id="deleteLocation" label="Delete" toolTip="Delete My Location Marker"/>
+                        </mx:HBox>
+                        <mx:Map3D ="{this.onMapPreinitialize(event);}" height="100%" id="map" key="ABQIAAAAzX6WJbyGuc9C2ux_QYzOjxQrMkUOuJi-5OEy5HnG140KTF20wRQ7JqCFsvBvG0Y_ySYWmCMDSmgwtw" mapevent_mapready="{this.onMapReady(event);}" width="100%"/>
+                        </mx:VBox>-->
+                        <mx:VBox creationComplete="{initResource()}" id="resourceContainer" label="Resource"/>
+                        <mx:VBox label="Selection Test">
+                            <components:AntSelectionContainer/>
+                        </mx:VBox>
+
+                        <!--
+                        | Fileshare pod
+                        -->
+                        <!--<mx:Canvas label="FileShare" width="100%" height="100%">
+                        <rtc:FileShare left="0" right="0" top="0" bottom="0"/>
+                        </mx:Canvas>-->
+                    </mx:ViewStack>
+                </mx:HBox>
+                <components:SoundPlayer right="0" bottom="0"/>
+            </mx:VBox>
         </rtc:ConnectSessionContainer>
     </mx:Panel>
 </mx:Application>
