@@ -20,8 +20,8 @@
             private function init():void
             {
                 addVersion();
-                fileUrl = loaderInfo.parameters.fileUrl ? loaderInfo.parameters.fileUrl : "";
-                //fileUrl = "http://172.20.30.38:8080/lisa/ASCoder.mxml";
+                //fileUrl = loaderInfo.parameters.fileUrl ? loaderInfo.parameters.fileUrl : "";
+                fileUrl = "http://172.20.30.38:8080/lisa/ASCoder.mxml";
                 var reg:RegExp = /[^\/\.]*\.[^\.\/]+/g;
                 var match:Array = fileUrl.match(reg);
                 var loader:URLLoader = new URLLoader();

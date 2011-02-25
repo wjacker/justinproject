@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:rtc="AfcsNameSpace">
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:rtc="http://ns.adobe.com/rtc">
 	<mx:Script>
 		<![CDATA[
 			import mx.controls.Alert;
@@ -22,23 +22,23 @@
 			 * Maintain a list of shapes in the Model (listBox)
 			 * Change Property, Move or Delete a shape from dropDown
 			 * Context menu to add a shape :)
-			 */	
-			 
+			 */
+
 			 [Bindable]
 			 protected var _shapes:ArrayCollection = new ArrayCollection();
              protected var _cMenu:ContextMenu = new ContextMenu();
              protected var _lastMouseX:int =15;
              protected var _lastMouseY:int =15;
-			 
+
 			protected function init():void
 			{
 				default_WB.addEventListener(CollectionNodeEvent.SYNCHRONIZATION_CHANGE, onSyncing);
 			}
-			
+
 			/**
 			 * Operations such as initializing the context Menu and propulating the shape Ids combo-box
 			 * after the WhiteBoard is synchronized.
-			 */ 
+			 */
 			protected function onSyncing(p_evt:Event):void
 			{
 				if(default_WB.isSynchronized){
@@ -58,30 +58,30 @@
 					default_WB.addEventListener(MouseEvent.CLICK,onMouseClick);
 			 	}
 			 }
-			 
+
 			 /**
 			 * This method stores the last point clicked. It is used by all the add** methods.
 			 * A simple way to add shapes at the last clicked point instead of adding it randomly or at a fixed point
-			 */ 
+			 */
 			 protected function onMouseClick(p_evt:MouseEvent):void
 			 {
 			 	_lastMouseX = p_evt.localX;
 			 	_lastMouseY = p_evt.localY;
 			 }
-			 
+
 			 /**
 			 * Event Listener when a shape is added. The shapeId of the shape addes is added/updated in the local list of ShapeIds
-			 */ 
+			 */
 			 protected function onShapeAdded(p_evt:WBModelEvent):void
 			 {
 	 			var shapeString:String = getShapeClass(p_evt.shapeID);
 	 			var labelString:String = p_evt.shapeID + " - " + shapeString;
-			 	_shapes.addItem({label:labelString,shapeId:p_evt.shapeID});	
+			 	_shapes.addItem({label:labelString,shapeId:p_evt.shapeID});
 			 }
-			 
+
 			 /**
 			 * Event Listener when a shape is deleted/removed. The shapeId of the shape addes is removed/updated in the local list of ShapeIds
-			 */ 
+			 */
 			 protected function onShapeRemoved(p_evt:WBModelEvent):void
 			 {
 	 			var shapeString:String = getShapeClass(p_evt.shapeID);
@@ -97,11 +97,11 @@
 			 		_shapes.removeItemAt(shapeIndex);
 			 	}
 			 }
-            
+
             /**
             * The shape properties and attributes are updated in the Grid when a user selects a shapeId
-            */ 
-            protected function onShapeSelected(p_collEvent:CollectionEvent=null):void 
+            */
+            protected function onShapeSelected(p_collEvent:CollectionEvent=null):void
             {
             	if (shapeListCombo.selectedIndex != -1 && shapeListCombo.selectedItem.shapeId) {
             		default_WB.selectedShapeIDs = [shapeListCombo.selectedItem.shapeId];
@@ -147,11 +147,11 @@
 	            	}
             	}
             }
-            
+
             /**
             * A new shapeDescriptor is constructed with the modified propertyData and Attributes and is used to modify the existing shape
-            */ 
-            protected function modifyTheShape():void 
+            */
+            protected function modifyTheShape():void
             {
             	if (shapeListCombo.selectedItem.shapeId && shapeListCombo.selectedIndex != -1) {
 	           		var shapeId:String = shapeListCombo.selectedItem.shapeId.toString();
@@ -162,7 +162,7 @@
 	            	newShapeDesc.width = Number(widthInput.text);
 	            	newShapeDesc.height = Number(heightInput.text);
 	            	newShapeDesc.rotation = Number(rotationInput.text);
-	            	
+
 	            	var propertyDataObject:Object = new Object();
 	            	if (propertyGrid.visible) {
 						propertyDataObject.alpha = alphaHSlider.value;
@@ -185,10 +185,10 @@
 	            	default_WB.model.modifyShapeDescriptor(shapeId, newShapeDesc);
             	}
             }
-            
+
             /**
             * Delete a shape. The operation removes the shape from the canvas and deletes the shape data from the model
-            */ 
+            */
             protected function deleteTheShape():void
             {
             	if (shapeListCombo.selectedItem.shapeId && shapeListCombo.selectedIndex != -1) {
@@ -198,10 +198,10 @@
 	            	shapeListCombo.prompt = "Select ShapeId";
             	}
             }
-            
+
             /**
             * Add a few context Menu options to add shapes using the context menu
-            */ 
+            */
             protected function addContextMenu():void
             {
             	var ellipseContextMenuItem:ContextMenuItem = new ContextMenuItem("Add Ellipse");
@@ -226,109 +226,109 @@
             	_cMenu.customItems.push(lineContextMenuItem);
             	_cMenu.customItems.push(hAreaContextMenuItem);
             }
-            
-            protected function removeDefaultContextMenuItems():void 
+
+            protected function removeDefaultContextMenuItems():void
             {
 	            _cMenu.hideBuiltInItems();
 	            var defaultItems:ContextMenuBuiltInItems = _cMenu.builtInItems;
 	            defaultItems.print = true;
 	        }
 
-            
+
 	        protected function addShapes(p_evt:ContextMenuEvent):void
 	        {
 				if(p_evt.currentTarget.caption == "Add Arrow") {
 					addArrow();
 				}
-				
+
 				if(p_evt.currentTarget.caption == "Add Ellipse") {
 					addEllipse();
 				}
-				
+
 				if(p_evt.currentTarget.caption == "Add HighLight Area") {
 					addHighLightArea();
 				}
-				
+
 				if(p_evt.currentTarget.caption == "Add Line") {
 					addLine();
 				}
-				
+
 				if(p_evt.currentTarget.caption == "Add Rectangle") {
 					addRectangle();
 				}
-				
+
 				if(p_evt.currentTarget.caption == "Add Rounded Rectangle") {
-					addRoundedRectangle();					
+					addRoundedRectangle();
 				}
-				
+
 				if(p_evt.currentTarget.caption == "Add Text") {
-					addSampleText();					
+					addSampleText();
 				}
 			}
-			
+
 			protected function addShapeClick():void
 	        {
 				if(shapeType.value == "Arrow") {
 					addArrow();
 				}
-				
+
 				if(shapeType.value == "Ellipse") {
 					addEllipse();
 				}
-				
+
 				if(shapeType.value == "Highlight Area") {
 					addHighLightArea();
 				}
-				
+
 				if(shapeType.value == "Line") {
 					addLine();
 				}
-				
+
 				if(shapeType.value == "Rectangle") {
 					addRectangle();
 				}
-				
+
 				if(shapeType.value == "Rounded Rectangle") {
-					addRoundedRectangle();					
+					addRoundedRectangle();
 				}
-				
+
 				if(shapeType.value == "Text") {
-					addSampleText();					
+					addSampleText();
 				}
 			}
-			
+
 			/**
 			 * Add an Ellipse using the WBEllipseShapeDescriptor. X, Y and Width and Height are the basic params that need to be specified
-			 */ 
-			protected function addEllipse():void 
+			 */
+			protected function addEllipse():void
 			{
 				var ellipseDesc:WBEllipseShapeDescriptor = new WBEllipseShapeDescriptor();
-				ellipseDesc.x = _lastMouseX; 
+				ellipseDesc.x = _lastMouseX;
 				ellipseDesc.y = _lastMouseY;
 				ellipseDesc.width = ellipseDesc.height = 100;
 				//Add the shapeData to the model. Once the model is updated the shape is added to the canvas.
 				default_WB.model.addShape(ellipseDesc);
 			}
-			
+
 			/**
 			 * Add a Rectangle using the WBRectangleShapeDescriptor.
-			 */ 
-			protected function addRectangle():void 
+			 */
+			protected function addRectangle():void
 			{
 				var rectangleShapeDesc:WBRectangleShapeDescriptor = new WBRectangleShapeDescriptor();
-				rectangleShapeDesc.x = _lastMouseX; 
+				rectangleShapeDesc.x = _lastMouseX;
 				rectangleShapeDesc.y = _lastMouseY;
 				rectangleShapeDesc.width = rectangleShapeDesc.height = 100;
 				default_WB.model.addShape(rectangleShapeDesc);
 			}
-			
+
 			/**
 			 * Add a Rounded Rectangle using the WBRoundedRectangleShapeDescriptor.
-			 */ 
-			protected function addRoundedRectangle():void 
+			 */
+			protected function addRoundedRectangle():void
 			{
 				var roundedRectShapeDesc:WBRoundedRectangleShapeDescriptor =  new WBRoundedRectangleShapeDescriptor();
-				roundedRectShapeDesc.x = _lastMouseX; 
+				roundedRectShapeDesc.x = _lastMouseX;
 				roundedRectShapeDesc.y = _lastMouseY;
 				roundedRectShapeDesc.width = roundedRectShapeDesc.height = 100;
 				default_WB.model.addShape(roundedRectShapeDesc);
@@ -336,53 +336,53 @@
 
 			/**
 			 * Add a Line using the WBLineShapeDescriptor.
-			 */ 			
-			protected function addLine():void 
+			 */
+			protected function addLine():void
 			{
 				var lineShapeDesc:WBLineShapeDescriptor = new WBLineShapeDescriptor();
-				lineShapeDesc.x = _lastMouseX; 
+				lineShapeDesc.x = _lastMouseX;
 				lineShapeDesc.y = _lastMouseY;
 				lineShapeDesc.width = lineShapeDesc.height = 100;
 				default_WB.model.addShape(lineShapeDesc);
 			}
-			
+
 			/**
 			 * Add an Arrow  using the WBArrowShapeDescriptor.
-			 */ 			
-			protected function addArrow():void 
+			 */
+			protected function addArrow():void
 			{
 				var arrowDesc:WBArrowShapeDescriptor = new WBArrowShapeDescriptor();
-				arrowDesc.x = _lastMouseX; 
+				arrowDesc.x = _lastMouseX;
 				arrowDesc.y = _lastMouseY;
 				arrowDesc.width = arrowDesc.height = 100;
 				default_WB.model.addShape(arrowDesc);
 			}
-	
+
 			/**
 			 * Add Text using the WBTextShapeDescriptor.
-			 */			
-			protected function addSampleText():void 
+			 */
+			protected function addSampleText():void
 			{
 				var textShapeDesc:WBTextShapeDescriptor = new WBTextShapeDescriptor();
-				textShapeDesc.x = _lastMouseX; 
+				textShapeDesc.x = _lastMouseX;
 				textShapeDesc.y = _lastMouseY;
 				textShapeDesc.htmlText = "SampleText";
 				default_WB.model.addShape(textShapeDesc);
 			}
-			
+
 			/**
 			 * Add a HightLight Area Shape using the WBHighlightAreaShapeDescriptor.
 			 * Note an HightLight area shape is nothing but a rounded Rectangle whose alpha is 0.5
-			 */		
-			protected function addHighLightArea():void 
+			 */
+			protected function addHighLightArea():void
 			{
 				var hightLightAreaDesc:WBHighlightAreaShapeDescriptor = new WBHighlightAreaShapeDescriptor();
-				hightLightAreaDesc.x = _lastMouseX; 
+				hightLightAreaDesc.x = _lastMouseX;
 				hightLightAreaDesc.y = _lastMouseY;
 				hightLightAreaDesc.width = hightLightAreaDesc.height = 100;
 				default_WB.model.addShape(hightLightAreaDesc);
 			}
-			
+
 			protected function getShapeClass(p_shapeId:String):String
 			{
 				var stringFullClass:String = flash.utils.getQualifiedClassName(default_WB.model.getShapeDescriptor(p_shapeId));
@@ -402,7 +402,7 @@
 	 			</mx:VBox>
 	 			<mx:Button id="changeShape" click="modifyTheShape()" label="Modify Shape"/>
 			</mx:VBox>
-			<mx:VRule height="100%" />	 	
+			<mx:VRule height="100%" />
 			<mx:Grid verticalGap="10" horizontalGap="10">
 	            <mx:GridRow>
 	                <mx:GridItem>
@@ -411,7 +411,7 @@
 					 		<mx:TextInput id="xInput" width="40"/>
 	                	</mx:HBox>
 	        		</mx:GridItem>
-	        		<mx:GridItem>	
+	        		<mx:GridItem>
 	        			<mx:HBox>
 		        			<mx:Label text="Y:" width="50"/>
 				 			<mx:TextInput id="yInput" width="40"/>
@@ -419,7 +419,7 @@
 	        		</mx:GridItem>
 				</mx:GridRow>
 				<mx:GridRow>
-					<mx:GridItem>        		
+					<mx:GridItem>
 				        <mx:HBox>
 				        	<mx:Label text="Width:" width="60"/>
 				 			<mx:TextInput id="widthInput" width="40"/>
@@ -449,12 +449,12 @@
 	                <mx:GridItem>
 	        			<mx:CheckBox id="dropShadow" label="Drop Shadow"/>
 	        		</mx:GridItem>
-	        		<mx:GridItem>	
+	        		<mx:GridItem>
 	        			<mx:CheckBox id="gradientFill" label="Gradient Fill"/>
 	        		</mx:GridItem>
 				</mx:GridRow>
 				<mx:GridRow>
-					<mx:GridItem>        		
+					<mx:GridItem>
 				        <mx:HBox>
 					        <mx:ColorPicker id="lineColor" showTextField="true" selectedColor="0xFFFFFF" labelField="Line Color" />
 				        	<mx:Label text="Line Color" />
@@ -471,9 +471,9 @@
 			        <mx:GridItem>
 				         <mx:VBox verticalAlign="middle" horizontalAlign="center" >
 					         <mx:HSlider id="alphaHSlider" minimum="0" maximum="1" value="0" dataTipPlacement="top" tickColor="0x323232"
-					            snapInterval="0.1" tickInterval="0.2" labels="[0,1]" allowTrackClick="true" 
+					            snapInterval="0.1" tickInterval="0.2" labels="[0,1]" allowTrackClick="true"
 					            liveDragging="true"/>
-					         <mx:Label text="Alpha" />   
+					         <mx:Label text="Alpha" />
 				         </mx:VBox>
 		             </mx:GridItem>
 			        <mx:GridItem horizontalAlign="center" verticalAlign="middle">
@@ -490,5 +490,5 @@
 	   			<mx:Button id="addShape" click="addShapeClick()" label="Add Shape" />
 	   		</mx:VBox>
         </mx:HBox>
-	 </rtc:ConnectSessionContainer> 
+	 </rtc:ConnectSessionContainer>
 </mx:Application>
