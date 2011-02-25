@@ -8,6 +8,7 @@ package
         public static const DOUBLE_QUOTED_STRING:RegExp = new RegExp('"(?:\\.|(\\\\\\")|[^\\""\\n])*"','g');
         public static const SINGLE_QUOTED_STRING:RegExp = new RegExp("'(?:\\.|(\\\\\\')|[^\\''\\n])*'", 'g');
         public static const REG_STRING:RegExp = new RegExp('\\/([^\\r])*\\/[gmi]+', 'g');
+        //public static const REG_STRING:RegExp = new RegExp('<([^<>]+)>([^<>]+)</\\1>', 'g');
 
         private static var ASCRIPT_KEYWORDS:String = "break continue do else for if return while "
             + "as case catch class const default delete extends "
@@ -32,7 +33,8 @@ package
                     new RegexpObject(SINGLE_LINE_PERLCOMMENTS, "comment"),
                     new RegexpObject(DOUBLE_QUOTED_STRING, "string"),
                     new RegexpObject(SINGLE_QUOTED_STRING, "string"),
-                    new RegexpObject(new RegExp('<[A-Za-z]*:[A-Za-z]*[ >]+|<\\/[A-Za-z]*:[A-Za-z]*>', 'g'), "mxml"),
+                    new RegexpObject(new RegExp('<[^<> /!]*|>$|<\\/[^<>]*>', 'g'), "string"),
+                    //new RegexpObject(new RegExp('<[A-Za-z]*:[A-Za-z1-9]*[ >]+|[^<>]*>\\$|<\\/[A-Za-z]*:[A-Za-z]*>', 'g'), "string")
                     new RegexpObject(new RegExp('\\bfunction\\b', 'gi'), "function"),
                     new RegexpObject(new RegExp('\\bvar\\b', 'gi'), "var"),
                     new RegexpObject(new RegExp('\\b([\\d]+(\\.[\\d]+)?|0x[a-f0-9]+)\\b', 'gi'), "number"),
