@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600" creationComplete="init()">
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+        <![CDATA[
+            import mx.events.BrowserChangeEvent;
+            import mx.managers.BrowserManager;
+            import mx.managers.IBrowserManager;
+            private var browserManager:IBrowserManager;
+            private function init():void
+            {
+                var s:String = "a+b,min(c+d,e,max(1+2,3)),d"
+                var sArr:Array = s.match(/[^,()]*[,()]|[^,()]$/g);
+
+                var resultArr:Array = new Array();
+                var count:int = 0;
+                var tempStr:String = "";
+                var str:String;
+                for(var i:int = 0; i < sArr.length; i++)
+                {
+                    str = sArr[i];
+                    if(str.length > 0)
+                    {
+                        tempStr += str;
+                        if(str.charAt(str.length - 1) == "(")
+                        {
+                            count++;
+                        }
+                        else if(str.charAt(str.length - 1) == ")")
+                        {
+                            count--;
+                        }
+                        else
+                        {
+                            if(count == 0)
+                            {
+                                if(tempStr.charAt(tempStr.length - 1) == ",")
+                                    tempStr = tempStr.substring(0, tempStr.length - 1)
+                                resultArr.push(tempStr);
+                                tempStr = "";
+                            }
+                        }
+                    }
+                }
+                /* browserManager = BrowserManager.getInstance();
+                browserManager.addEventListener(BrowserChangeEvent.URL_CHANGE, showURLDetails);
+                browserManager.init("", "Welcome!"); */
+            }
+
+            private function showURLDetails(e:BrowserChangeEvent):void
+            {
+                trace(browserManager.url);
+            }
+        ]]>
+    </fx:Script>
+
+</s:Application>

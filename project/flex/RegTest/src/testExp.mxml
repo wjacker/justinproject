@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+	layout="absolute">
+	<mx:Script>
+		<![CDATA[
+            import com.justin.validator.ExpressionValidator;
+            private var ev:ExpressionValidator = new ExpressionValidator();
+
+            private function calculatorExpress():void
+            {
+            	try
+            	{
+                    var obj:Object = new Object();
+                    var s:String = veriableInput.text.replace(/ /g, "");
+                    var result:Array = s.split(",");
+                    for each(var veriable:String in result)
+                    {
+                        if(veriable != "")
+                        {
+                            var splitS:Array = veriable.split(":");
+                            obj[splitS[0]] = splitS[1];
+                        }
+                    }
+                    var expressStr:String = input.text.replace(/ /g, "");
+                    outupt.text = ev.eval(expressStr, obj) + "";
+
+
+            	}
+            	catch(e:Error)
+            	{
+            		outupt.text = "Eval Error";
+
+            	}
+            }
+		]]>
+	</mx:Script>
+
+	<mx:Label text="Expression Input:" x="67" y="11"/>
+	<mx:TextInput id="input" x="179" y="9" text="slade(a,b)"/>
+    <mx:Label text="Veriable Input:" x="67" y="51"/>
+    <mx:TextInput id="veriableInput" x="179" y="49" text="a:15,b:16,c:1"/>
+	<mx:Label id="outupt" x="179" y="96"/>
+	<mx:Button label="Calculator" click="calculatorExpress()" x="67" y="96"/>
+</mx:Application>
