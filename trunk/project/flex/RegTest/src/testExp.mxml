@@ -21,24 +21,52 @@
                             obj[splitS[0]] = splitS[1];
                         }
                     }
+
+                    obj["justin"] = justin;
                     var expressStr:String = input.text.replace(/ /g, "");
                     outupt.text = ev.eval(expressStr, obj) + "";
-
-
             	}
             	catch(e:Error)
             	{
             		outupt.text = "Eval Error";
-
             	}
+            }
+
+            private function justin(x:Number,y:Number):Number
+            {
+                return Math.sqrt(Math.pow(x, 2) + Math.pow(y,2));
             }
 		]]>
 	</mx:Script>
 
 	<mx:Label text="Expression Input:" x="67" y="11"/>
-	<mx:TextInput id="input" x="179" y="9" text="slade(a,b)"/>
-    <mx:Label text="Veriable Input:" x="67" y="51"/>
-    <mx:TextInput id="veriableInput" x="179" y="49" text="a:15,b:16,c:1"/>
-	<mx:Label id="outupt" x="179" y="96"/>
-	<mx:Button label="Calculator" click="calculatorExpress()" x="67" y="96"/>
+    <mx:TextArea id="input" x="179" y="9" text="sqrt(abs(min(max(a,b),d-c)))" width="309" height="166"/>
+    <mx:Label text="Veriable Input:" x="66" y="199"/>
+    <mx:TextArea id="veriableInput" x="179" y="198" text="a:15,b:16,c:1,d:18" width="309" height="125"/>
+	<mx:Label id="outupt" x="179" y="341"/>
+	<mx:Button label="Calculator" click="calculatorExpress()" x="67" y="340"/>
+    <mx:Text width="298" x="496" y="10" height="366">
+        <mx:text>
+            <![CDATA[Support Math Method:
+min(...parameters)
+max(...parameters)
+abs(x:Number)
+sqrt(x:Number)
+cos(x:Number)
+sin(x:Number)
+tan(x:Number)
+pow(x:Number,  y:Number)
+random()
+floor(x:Number)
+ceil(x:Number)
+
+Customer Method:
+
+private function justin(x:Number,y:Number):Number
+{
+    return Math.sqrt(Math.pow(x, 2) + Math.pow(y,2));
+}
+            ]]>
+        </mx:text>
+    </mx:Text>
 </mx:Application>
