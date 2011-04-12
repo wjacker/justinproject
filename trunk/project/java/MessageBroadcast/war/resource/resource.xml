@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <resource>
+    	<link name='Flex Compiler Command - Line Options' url='resource/Flex_Compiler_Command_Line_Options.htm'/>
+    	<link name='Flex Internals' url='resource/Flex_Internals.htm'/>
+    	<link name='Flex Misc' url='resource/flex_misc.htm'/>
+    	<link name='Spring BlazeDS Integration Reference Guide' url='resource/Spring_BlazeDS_Integration_Reference_Guide.html'/>
+    	<link name='Flex component life cycle' url='resource/flex_component_life_cycle.htm'/>
+    </resource>
+</config>
