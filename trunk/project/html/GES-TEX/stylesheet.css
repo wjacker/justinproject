@@ -1,0 +1,47 @@
+@font-face {
+    font-family: 'KlavikaBoldBoldItalic';
+    src: url('../fonts/klavikaboldbolditalic-webfont.eot');
+    src: url('../fonts/klavikaboldbolditalic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/klavikaboldbolditalic-webfont.woff') format('woff'),
+         url('../fonts/klavikaboldbolditalic-webfont.ttf') format('truetype'),
+         url('../fonts/klavikaboldbolditalic-webfont.svg#KlavikaBoldBoldItalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'KlavikaBold';
+    src: url('../fonts/klavikaboldbold-webfont.eot');
+    src: url('../fonts/klavikaboldbold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/klavikaboldbold-webfont.woff') format('woff'),
+         url('../fonts/klavikaboldbold-webfont.ttf') format('truetype'),
+         url('../fonts/klavikaboldbold-webfont.svg#KlavikaBold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'KlavikaBoldBoldOSF';
+    src: url('../fonts/klavikaboldboldosf-webfont.eot');
+    src: url('../fontsfonts/klavikaboldboldosf-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fontsfonts/klavikaboldboldosf-webfont.woff') format('woff'),
+         url('../fonts/klavikaboldboldosf-webfont.ttf') format('truetype'),
+         url('../fonts/klavikaboldboldosf-webfont.svg#KlavikaBoldBoldOSF') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'MyriadProBlackCondensed';
+    src: url('../fonts/myriadpro-blackcond-webfont.eot');
+    src: url('../fonts/myriadpro-blackcond-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/myriadpro-blackcond-webfont.woff') format('woff'),
+         url('../fonts/myriadpro-blackcond-webfont.ttf') format('truetype'),
+         url('../fonts/myriadpro-blackcond-webfont.svg#MyriadProBlackCondensed') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
