@@ -86,7 +86,6 @@ small{
 	cursor:pointer;
 	cursor:hand;
 	text-align:left;
-	padding-top:1px;
 }
 .accordionHeader .content .title{
 	margin-top:50px;
@@ -153,7 +152,6 @@ small{
 }
 .accordionContent{
 	width:100%;
-	padding:50px 0 50px 0;
 	display:none;
 }
 
@@ -198,14 +196,10 @@ small{
 	height:760px;
 }
 
-.whowearebg{
-	background:#000 url(../images/carousel/background1.jpg) no-repeat;
-}
-
 .carousel{
 	position:absolute;
 	padding-top:1px;
-	margin:760px auto 0px auto;
+	margin:710px auto 0px auto;
 }
 
 .carousel .carouselItem{

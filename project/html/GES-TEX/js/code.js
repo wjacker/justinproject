@@ -120,12 +120,12 @@ function slideView(fromIndex, toIndex)
 	{
 		$(carouselPanels[fromIndex]).css("marginLeft", "0px");
 		$(carouselPanels[fromIndex]).animate({
-			marginLeft: "2000px"
+			marginLeft: "1440px"
 		  }, 500, function() {
 			  $(carouselPanels[fromIndex]).removeClass("active");
 			  $(carouselNav[fromIndex]).removeClass("active");
 		  });
-		  $(carouselPanels[toIndex]).css("marginLeft", "-2000px");
+		  $(carouselPanels[toIndex]).css("marginLeft", "-1440px");
 		  $(carouselPanels[toIndex]).animate({
 			marginLeft: "0px"
 		  }, 500, function() {
@@ -137,12 +137,12 @@ function slideView(fromIndex, toIndex)
 	{
 		$(carouselPanels[fromIndex]).css("marginLeft", "0px");
 		$(carouselPanels[fromIndex]).animate({
-			marginLeft: "-2000px"
+			marginLeft: "-1440px"
 		  }, 500, function() {
 			  $(carouselPanels[fromIndex]).removeClass("active");
 			  $(carouselNav[fromIndex]).removeClass("active");
 		  });
-		  $(carouselPanels[toIndex]).css("marginLeft", "2000px");
+		  $(carouselPanels[toIndex]).css("marginLeft", "1440px");
 		  $(carouselPanels[toIndex]).css("visibility", "visible");
 		  $(carouselPanels[toIndex]).animate({
 			marginLeft: "0px"
